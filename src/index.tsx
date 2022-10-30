@@ -28,7 +28,7 @@ const Joystick: React.FC<IJoystickProps> = ({
   });
 
   const initialControllerLocation = React.useMemo<ILocation>(() => {
-    const diff = Math.abs(baseRadius - controllerRadius);
+    const diff = baseRadius - controllerRadius;
     return {
       top: diff,
       left: diff,
@@ -72,8 +72,8 @@ const Joystick: React.FC<IJoystickProps> = ({
       } else {
         const ratio = baseRadius / distanceToCenter;
         setControllerLocation({
-          left: Math.round(diffX * ratio + controllerRadius),
-          top: Math.round(diffY * ratio + controllerRadius),
+          left: Math.round(diffX * ratio + baseRadius - controllerRadius),
+          top: Math.round(diffY * ratio + baseRadius - controllerRadius),
         });
       }
       setAngle(getAngle(diffX, diffY));
