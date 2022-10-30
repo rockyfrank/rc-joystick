@@ -1,3 +1,5 @@
+import './index.less';
+
 import React, { PropsWithChildren } from 'react';
 
 import { IControllerWrapperProps } from '../../typings';
