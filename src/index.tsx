@@ -16,6 +16,9 @@ const Joystick: React.FC<IJoystickProps> = ({
   baseRadius = 75,
   controllerRadius = 35,
   onChange,
+  onAngleChange,
+  onDirectionChange,
+  onDistanceChange,
 }) => {
   const joystickDOM = React.useRef<HTMLDivElement | null>(null);
   const [angle, setAngle] = React.useState<number | undefined>();
@@ -119,6 +122,18 @@ const Joystick: React.FC<IJoystickProps> = ({
       distance,
     });
   }, [direction, angle, distance, onChange]);
+
+  React.useEffect(() => {
+    onAngleChange?.(angle);
+  }, [angle, onAngleChange]);
+
+  React.useEffect(() => {
+    onDirectionChange?.(direction);
+  }, [direction, onDirectionChange]);
+
+  React.useEffect(() => {
+    onDistanceChange?.(distance);
+  }, [distance, onDistanceChange]);
 
   return (
     <div className={baseCls} style={baseStyle} ref={joystickDOM}>
