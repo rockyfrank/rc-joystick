@@ -12,6 +12,9 @@ export interface IJoystickProps {
   baseRadius?: number;
   controllerRadius?: number;
   onChange?: (val: IChangeValue) => void;
+  onAngleChange?: (angle?: number) => void;
+  onDirectionChange?: (direction: Direction) => void;
+  onDistanceChange?: (distance: number) => void;
 }
 
 export interface IJoystickControllerProps {
