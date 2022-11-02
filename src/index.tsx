@@ -15,6 +15,7 @@ const Joystick: React.FC<IJoystickProps> = ({
   controllerClassName = '',
   baseRadius = 75,
   controllerRadius = 35,
+  insideMode,
   onChange,
   onAngleChange,
   onDirectionChange,
@@ -29,6 +30,9 @@ const Joystick: React.FC<IJoystickProps> = ({
     left: 0,
     top: 0,
   });
+  const outerRadius = React.useMemo(() => {
+    return insideMode ? baseRadius - controllerRadius : baseRadius;
+  }, [insideMode, baseRadius, controllerRadius]);
 
   const initialControllerLocation = React.useMemo<ILocation>(() => {
     const diff = baseRadius - controllerRadius;
@@ -66,22 +70,23 @@ const Joystick: React.FC<IJoystickProps> = ({
       const diffX = clientX - centerLocation.left;
       const diffY = clientY - centerLocation.top;
       const distanceToCenter = Math.sqrt(diffX * diffX + diffY * diffY);
-      setDistance(Math.min(distanceToCenter, baseRadius));
-      if (distanceToCenter <= baseRadius) {
+      setDistance(Math.min(distanceToCenter, outerRadius));
+      if (distanceToCenter <= outerRadius) {
         setControllerLocation({
-          left: Math.round(clientX - joystickLocation.left - controllerRadius),
-          top: Math.round(clientY - joystickLocation.top - controllerRadius),
+          left: clientX - joystickLocation.left - controllerRadius,
+          top: clientY - joystickLocation.top - controllerRadius,
         });
       } else {
-        const ratio = baseRadius / distanceToCenter;
+        const ratio = outerRadius / distanceToCenter;
+        const diff = insideMode ? outerRadius : outerRadius - controllerRadius;
         setControllerLocation({
-          left: Math.round(diffX * ratio + baseRadius - controllerRadius),
-          top: Math.round(diffY * ratio + baseRadius - controllerRadius),
+          left: diffX * ratio + diff,
+          top: diffY * ratio + diff,
         });
       }
       setAngle(getAngle(diffX, diffY));
     },
-    [baseRadius, centerLocation, controllerRadius, joystickLocation],
+    [insideMode, outerRadius, centerLocation, controllerRadius, joystickLocation],
   );
 
   const onMouseDown = React.useCallback<MouseEventHandler>(

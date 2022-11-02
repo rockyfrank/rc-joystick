@@ -11,6 +11,7 @@ export interface IJoystickProps {
   controllerClassName?: string;
   baseRadius?: number;
   controllerRadius?: number;
+  insideMode?: boolean;
   onChange?: (val: IChangeValue) => void;
   onAngleChange?: (angle?: number) => void;
   onDirectionChange?: (direction: Direction) => void;
