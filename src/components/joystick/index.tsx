@@ -23,13 +23,14 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
   } = props;
   const joystickDOM = React.useRef<HTMLDivElement | null>(null);
   const [angle, setAngle] = React.useState<number | undefined>();
-  const [isControlling, setIsControlling] = React.useState<boolean>(false);
   const [distance, setDistance] = React.useState<number>(0);
   const direction = angleToDirection(angle);
   const joystickLocation = React.useRef<ILocation>({
     left: 0,
     top: 0,
   });
+  const isControlling = React.useRef(false);
+  const [controllerTransition, setControllerTransition] = React.useState(0);
 
   const outerRadius = React.useMemo(() => {
     return insideMode ? baseRadius - controllerRadius : baseRadius;
@@ -86,7 +87,8 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
 
   const onMouseDown = React.useCallback<MouseEventHandler>(
     (e) => {
-      setIsControlling(true);
+      setControllerTransition(0);
+      isControlling.current = true;
       updateJoystickLocation();
       updateControllerLocation(e.nativeEvent);
     },
@@ -95,16 +97,17 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
 
   React.useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
-      if (!isControlling) return;
+      if (!isControlling.current) return;
       updateControllerLocation(e);
     };
 
     const onMouseUp = () => {
-      if (!isControlling) return;
-      setIsControlling(false);
+      if (!isControlling.current) return;
+      isControlling.current = false;
       setAngle(undefined);
       setDistance(0);
       setControllerLocation(initialControllerLocation);
+      setControllerTransition(200);
     };
 
     document.addEventListener('mousemove', onMouseMove);
@@ -114,7 +117,7 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
-  }, [updateControllerLocation, isControlling, initialControllerLocation]);
+  }, [updateControllerLocation, initialControllerLocation]);
 
   const onChange = useThrottle(props.onChange, throttle);
   const onAngleChange = useThrottle(props.onAngleChange, throttle);
@@ -154,7 +157,11 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
 
   return (
     <div className={baseCls} style={baseStyle} ref={joystickDOM}>
-      <ControllerWrapper location={controllerLocation} onMouseDown={onMouseDown}>
+      <ControllerWrapper
+        location={controllerLocation}
+        onMouseDown={onMouseDown}
+        transition={controllerTransition}
+      >
         {controller}
       </ControllerWrapper>
     </div>

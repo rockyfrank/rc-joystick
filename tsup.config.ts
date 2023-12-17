@@ -2,7 +2,7 @@ import { lessLoader } from 'esbuild-plugin-less';
 import { defineConfig, Options } from 'tsup';
 
 const baseConfig: Options = {
-  entry: ['src/index.tsx'],
+  entry: ['src/index.ts'],
   sourcemap: true,
   clean: true,
   treeshake: true,

@@ -65,6 +65,10 @@ export interface IJoystickControllerProps {
 export interface IControllerWrapperProps
   extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
   location: ILocation;
+  /**
+   * Transition time for controller to return to origin (unit: ms)
+   */
+  transition?: number;
 }
 
 export interface ILocation {

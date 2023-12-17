@@ -1,7 +1,8 @@
+import { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
+
 import { Joystick } from '../src/components/joystick';
 import { IJoystickChangeValue } from '../src/typings';
-import { Meta, StoryObj } from '@storybook/react';
 
 interface IAddListenersDemo {
   throttle?: number;
