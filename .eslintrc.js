@@ -1,5 +1,5 @@
 module.exports = {
-  extends: ['eslint-config-ali/typescript'],
+  extends: ['eslint-config-ali/typescript', 'plugin:storybook/recommended'],
   plugins: ['simple-import-sort', 'react-hooks'],
   rules: {
     'simple-import-sort/imports': 'error',

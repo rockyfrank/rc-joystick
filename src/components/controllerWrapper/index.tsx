@@ -1,10 +1,10 @@
 import './index.less';
 
-import React, { PropsWithChildren } from 'react';
+import React from 'react';
 
 import { IControllerWrapperProps } from '../../typings';
 
-const ControllerWrapper: React.FC<PropsWithChildren<IControllerWrapperProps>> = ({
+const ControllerWrapper: React.FC<IControllerWrapperProps> = ({
   children,
   location,
   style = {},

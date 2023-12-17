@@ -1,20 +1,50 @@
 import { Direction } from './enums';
 
-export interface IChangeValue {
+export interface IJoystickChangeValue {
   direction: Direction;
   angle: number | undefined;
   distance: number;
 }
 
 export interface IJoystickProps {
+  /**
+   * joystick container's extra className
+   */
   className?: string;
+  /**
+   * joystick controller's extra className
+   */
   controllerClassName?: string;
+  /**
+   * joystick base radius
+   * @default 75
+   */
   baseRadius?: number;
+  /**
+   * joystick controller radius
+   * @default 35
+   */
   controllerRadius?: number;
+  /**
+   * controller will always be inside joystick's base if `insideMode` is true
+   * @default false
+   */
   insideMode?: boolean;
-  onChange?: (val: IChangeValue) => void;
+  /**
+   * Trigger when the any of angle/direction/distance state is changing
+   */
+  onChange?: (val: IJoystickChangeValue) => void;
+  /**
+   * Trigger when the angle state is changing
+   */
   onAngleChange?: (angle?: number) => void;
+  /**
+   * Trigger when the direction state is changing
+   */
   onDirectionChange?: (direction: Direction) => void;
+  /**
+   * Trigger when the distance state is changing
+   */
   onDistanceChange?: (distance: number) => void;
 }
 
