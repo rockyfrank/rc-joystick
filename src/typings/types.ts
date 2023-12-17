@@ -31,6 +31,11 @@ export interface IJoystickProps {
    */
   insideMode?: boolean;
   /**
+   * Trigger throttle (ms)
+   * @default 0
+   */
+  throttle?: number;
+  /**
    * Trigger when the any of angle/direction/distance state is changing
    */
   onChange?: (val: IJoystickChangeValue) => void;
