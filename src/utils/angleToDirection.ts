@@ -1,13 +1,13 @@
 import { Direction, IRange } from '../typings';
 
 const directionAngleMap: Record<Direction, IRange[]> = {
-  [Direction.C]: [
+  [Direction.Center]: [
     {
       min: 0,
       max: 0,
     },
   ],
-  [Direction.R]: [
+  [Direction.Right]: [
     {
       min: 0,
       max: 22.5,
@@ -17,43 +17,43 @@ const directionAngleMap: Record<Direction, IRange[]> = {
       max: 360,
     },
   ],
-  [Direction.RT]: [
+  [Direction.RightTop]: [
     {
       min: 22.5,
       max: 67.5,
     },
   ],
-  [Direction.T]: [
+  [Direction.Top]: [
     {
       min: 67.5,
       max: 112.5,
     },
   ],
-  [Direction.TL]: [
+  [Direction.TopLeft]: [
     {
       min: 112.5,
       max: 157.5,
     },
   ],
-  [Direction.L]: [
+  [Direction.Left]: [
     {
       min: 157.5,
       max: 202.5,
     },
   ],
-  [Direction.LB]: [
+  [Direction.LeftBottom]: [
     {
       min: 202.5,
       max: 247.5,
     },
   ],
-  [Direction.B]: [
+  [Direction.Bottom]: [
     {
       min: 247.5,
       max: 292.5,
     },
   ],
-  [Direction.BR]: [
+  [Direction.BottomRight]: [
     {
       min: 292.5,
       max: 337.5,
@@ -61,8 +61,8 @@ const directionAngleMap: Record<Direction, IRange[]> = {
   ],
 };
 
-export const useDirection = (angle: number | undefined): Direction => {
-  let direction = Direction.C;
+export const angleToDirection = (angle: number | undefined): Direction => {
+  let direction = Direction.Center;
   if (angle === undefined) return direction;
 
   for (const key of Object.keys(directionAngleMap)) {

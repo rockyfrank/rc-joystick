@@ -3,15 +3,15 @@ import './index.less';
 import classnames from 'classnames';
 import React from 'react';
 
-import { useStyleByRadius } from '../../hooks';
 import { IJoystickControllerProps } from '../../typings';
+import { getStyleByRadius } from '../../utils';
 
-const Controller: React.FC<IJoystickControllerProps> = ({ className = '', radius }) => {
-  const controllerCls = classnames('react-joystick-controller', className);
+export const Controller: React.FC<IJoystickControllerProps> = React.memo(
+  ({ className = '', radius }) => {
+    const controllerCls = classnames('react-joystick-controller', className);
 
-  const controllerStyle = useStyleByRadius(radius);
+    const controllerStyle = getStyleByRadius(radius);
 
-  return <div className={controllerCls} style={controllerStyle}></div>;
-};
-
-export default React.memo(Controller);
+    return <div className={controllerCls} style={controllerStyle}></div>;
+  },
+);

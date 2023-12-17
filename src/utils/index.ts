@@ -22,3 +22,13 @@ export const getDOMLocation = (dom: HTMLDivElement | null): ILocation => {
     left,
   };
 };
+
+export const getStyleByRadius = (radius: number) => {
+  const diameter = radius * 2;
+  return {
+    width: diameter,
+    height: diameter,
+  };
+};
+
+export { angleToDirection } from './angleToDirection';

@@ -3,11 +3,10 @@ import './index.less';
 import classnames from 'classnames';
 import React from 'react';
 
-import ControllerWrapper from '../controllerWrapper';
-import Controller from '../controller';
-import { useDirection, useStyleByRadius } from '../../hooks';
+import { ControllerWrapper } from '../controllerWrapper';
+import { Controller } from '../controller';
 import { IJoystickProps, ILocation } from '../../typings';
-import { getAngle, getDOMLocation } from '../../utils';
+import { getAngle, getDOMLocation, angleToDirection, getStyleByRadius } from '../../utils';
 
 type MouseEventHandler = React.MouseEventHandler<HTMLDivElement>;
 
@@ -27,7 +26,7 @@ export const Joystick: React.FC<IJoystickProps> = React.memo(
     const [angle, setAngle] = React.useState<number | undefined>();
     const [isControlling, setIsControlling] = React.useState<boolean>(false);
     const [distance, setDistance] = React.useState<number>(0);
-    const direction = useDirection(angle);
+    const direction = angleToDirection(angle);
     const joystickLocation = React.useRef<ILocation>({
       left: 0,
       top: 0,
@@ -55,7 +54,7 @@ export const Joystick: React.FC<IJoystickProps> = React.memo(
     const baseCls = classnames('react-joystick', className);
     const controllerCls = classnames(controllerClassName);
 
-    const baseStyle = useStyleByRadius(baseRadius);
+    const baseStyle = getStyleByRadius(baseRadius);
 
     const updateControllerLocation = React.useCallback(
       (e: MouseEvent) => {
