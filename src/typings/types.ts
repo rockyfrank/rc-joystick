@@ -51,6 +51,10 @@ export interface IJoystickProps {
    * Trigger when the distance state is changing
    */
   onDistanceChange?: (distance: number) => void;
+  /**
+   * Custom render controller
+   */
+  renderController?: (props: IJoystickControllerProps) => React.ReactNode;
 }
 
 export interface IJoystickControllerProps {

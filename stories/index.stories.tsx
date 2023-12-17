@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import React from 'react';
 
 import { Joystick } from '../src/components/joystick';
 
@@ -29,5 +30,22 @@ export const CustomSize: Story = {
   args: {
     baseRadius: 30,
     controllerRadius: 20,
+  },
+};
+
+export const CustomRenderController: Story = {
+  args: {
+    renderController: ({ radius, className }) => {
+      return (
+        <div
+          style={{
+            height: radius * 2,
+            width: radius * 2,
+            background: 'linear-gradient(to bottom, rgb(255, 255, 255), rgb(134, 144, 154))',
+          }}
+          className={className}
+        />
+      );
+    },
   },
 };

@@ -3,11 +3,11 @@ import './index.less';
 import classnames from 'classnames';
 import React from 'react';
 
-import { ControllerWrapper } from '../controllerWrapper';
-import { Controller } from '../controller';
-import { IJoystickProps, ILocation } from '../../typings';
-import { getAngle, getDOMLocation, angleToDirection, getStyleByRadius } from '../../utils';
 import { useThrottle } from '../../hooks/useThrottle';
+import { IJoystickProps, ILocation } from '../../typings';
+import { angleToDirection, getAngle, getDOMLocation, getStyleByRadius } from '../../utils';
+import { Controller } from '../controller';
+import { ControllerWrapper } from '../controllerWrapper';
 
 type MouseEventHandler = React.MouseEventHandler<HTMLDivElement>;
 
@@ -19,6 +19,7 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
     controllerRadius = 35,
     insideMode,
     throttle = 0,
+    renderController,
   } = props;
   const joystickDOM = React.useRef<HTMLDivElement | null>(null);
   const [angle, setAngle] = React.useState<number | undefined>();
@@ -50,7 +51,7 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
   }, []);
 
   const baseCls = classnames('react-joystick', className);
-  const controllerCls = classnames(controllerClassName);
+  const controllerCls = classnames('react-joystick-controller', controllerClassName);
 
   const baseStyle = getStyleByRadius(baseRadius);
 
@@ -140,10 +141,21 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
     onDistanceChange?.(distance);
   }, [distance, onDistanceChange]);
 
+  const controller = React.useMemo(() => {
+    if (renderController) {
+      return renderController({
+        radius: controllerRadius,
+        className: controllerCls,
+      });
+    }
+
+    return <Controller radius={controllerRadius} className={controllerCls} />;
+  }, [controllerCls, controllerRadius, renderController]);
+
   return (
     <div className={baseCls} style={baseStyle} ref={joystickDOM}>
       <ControllerWrapper location={controllerLocation} onMouseDown={onMouseDown}>
-        <Controller radius={controllerRadius} className={controllerCls} />
+        {controller}
       </ControllerWrapper>
     </div>
   );
