@@ -1,5 +1,6 @@
-# 🕹️ react-joystick
+# 🕹️ rc-joystick
 
+![npm-version](https://img.shields.io/npm/v/rc-joystick)
 Joystick component built with React.
 [Here](https://rockyfrank.github.io/react-joystick/?path=/docs/example--docs) to see the storybook.
 
