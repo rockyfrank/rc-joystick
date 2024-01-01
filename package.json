@@ -1,5 +1,5 @@
 {
-  "name": "react-joystick",
+  "name": "rc-joystick",
   "version": "1.0.0",
   "description": "A react joystick widget",
   "main": "dist/lib/index.js",

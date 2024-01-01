@@ -5,7 +5,7 @@ import React from 'react';
 
 import { GhostContext } from '../../context';
 import { useThrottle } from '../../hooks/useThrottle';
-import { DirectionCountMode, IJoystickProps, ILocation } from '../../typings';
+import { DirectionCount, IJoystickProps, ILocation } from '../../typings';
 import { angleToDirection, getAngle, getStyleByRadius } from '../../utils';
 import { ArrowsWrapper } from '../arrowsWrapper';
 import { Controller } from '../controller';
@@ -20,15 +20,15 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
     insideMode,
     throttle = 0,
     renderController,
-    directionCountMode = DirectionCountMode.Five,
+    directionCount = DirectionCount.Five,
   } = props;
   const [angle, setAngle] = React.useState<number | undefined>();
   const [distance, setDistance] = React.useState<number>(0);
   const controllerWrapper = React.useRef<HTMLDivElement | null>(null);
 
   const direction = React.useMemo(() => {
-    return angleToDirection(directionCountMode, angle);
-  }, [angle, directionCountMode]);
+    return angleToDirection(directionCount, angle);
+  }, [angle, directionCount]);
 
   const touchPoint = React.useRef<ILocation>({
     left: 0,

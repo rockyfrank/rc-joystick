@@ -1,5 +1,5 @@
 import { Direction, IRange } from '../typings';
-import { DirectionCountMode } from './../typings/enums';
+import { DirectionCount } from './../typings/enums';
 
 const nineDirectionAngleMap: Record<Direction, IRange[]> = {
   [Direction.Center]: [
@@ -105,15 +105,12 @@ const fiveDirectionAngleMap: Record<
   ],
 };
 
-export const angleToDirection = (
-  mode: DirectionCountMode,
-  angle: number | undefined,
-): Direction => {
+export const angleToDirection = (mode: DirectionCount, angle: number | undefined): Direction => {
   let direction = Direction.Center;
   if (angle === undefined) return direction;
 
   const directionAngleMap =
-    mode === DirectionCountMode.Five ? fiveDirectionAngleMap : nineDirectionAngleMap;
+    mode === DirectionCount.Five ? fiveDirectionAngleMap : nineDirectionAngleMap;
 
   for (const key of Object.keys(directionAngleMap)) {
     const ranges = directionAngleMap[key as keyof typeof directionAngleMap];

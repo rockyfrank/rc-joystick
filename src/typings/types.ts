@@ -1,4 +1,4 @@
-import { Direction, DirectionCountMode } from './enums';
+import { Direction, DirectionCount } from './enums';
 
 export interface IJoystickChangeValue {
   direction: Direction;
@@ -34,9 +34,9 @@ export interface IJoystickProps {
    * direction count mode
    * five for: Center、Right、Top、Left、Bottom
    * nine for: Center、Right、RightTop、Top、TopLeft、Left、LeftBottom、Bottom、BottomRight
-   * @default DirectionCountMode.Five
+   * @default DirectionCount.Five
    */
-  directionCountMode?: DirectionCountMode;
+  directionCount?: DirectionCount;
   /**
    * Trigger throttle (ms)
    * @default 0
