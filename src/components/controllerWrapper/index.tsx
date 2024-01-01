@@ -1,11 +1,11 @@
 import './index.less';
 
-import React from 'react';
+import React, { forwardRef } from 'react';
 
 import { IControllerWrapperProps } from '../../typings';
 
 export const ControllerWrapper: React.FC<IControllerWrapperProps> = React.memo(
-  ({ children, location, transition, style = {}, ...wrapperProps }) => {
+  forwardRef(({ children, location, transition, style = {}, ...wrapperProps }, ref) => {
     const wrapperStyle = React.useMemo(() => {
       return {
         ...style,
@@ -17,9 +17,9 @@ export const ControllerWrapper: React.FC<IControllerWrapperProps> = React.memo(
     }, [style, location, transition]);
 
     return (
-      <div className="controller-wrapper" style={wrapperStyle} {...wrapperProps}>
+      <div className="controller-wrapper" style={wrapperStyle} {...wrapperProps} ref={ref}>
         {children}
       </div>
     );
-  },
+  }),
 );

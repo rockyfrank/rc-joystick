@@ -3,14 +3,13 @@ import './index.less';
 import classnames from 'classnames';
 import React from 'react';
 
+import { GhostContext } from '../../context';
 import { useThrottle } from '../../hooks/useThrottle';
 import { DirectionCountMode, IJoystickProps, ILocation } from '../../typings';
 import { angleToDirection, getAngle, getStyleByRadius } from '../../utils';
 import { ArrowsWrapper } from '../arrowsWrapper';
 import { Controller } from '../controller';
 import { ControllerWrapper } from '../controllerWrapper';
-
-type MouseEventHandler = React.MouseEventHandler<HTMLDivElement>;
 
 export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
   const {
@@ -23,9 +22,9 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
     renderController,
     directionCountMode = DirectionCountMode.Five,
   } = props;
-  const joystickDOM = React.useRef<HTMLDivElement | null>(null);
   const [angle, setAngle] = React.useState<number | undefined>();
   const [distance, setDistance] = React.useState<number>(0);
+  const controllerWrapper = React.useRef<HTMLDivElement | null>(null);
 
   const direction = React.useMemo(() => {
     return angleToDirection(directionCountMode, angle);
@@ -52,7 +51,11 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
 
   const [controllerLocation, setControllerLocation] =
     React.useState<ILocation>(initialControllerLocation);
-  const baseCls = classnames('react-joystick', className);
+  const { ghost, isActive, getGhostArea } = React.useContext(GhostContext);
+  const baseCls = classnames('react-joystick', className, {
+    ghost,
+    'ghost-active': isActive,
+  });
   const controllerCls = classnames('react-joystick-controller', controllerClassName);
 
   const baseStyle = getStyleByRadius(baseRadius);
@@ -82,20 +85,23 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
     [outerRadius, baseRadius, controllerRadius, insideMode],
   );
 
-  const onMouseDown = React.useCallback<MouseEventHandler>(
-    (e) => {
-      setControllerTransition(0);
-      isControlling.current = true;
-      touchPoint.current = {
-        left: e.clientX,
-        top: e.clientY,
-      };
-      updateControllerLocation(e.nativeEvent);
-    },
-    [updateControllerLocation],
-  );
-
   React.useEffect(() => {
+    const onMouseDown = (e: MouseEvent) => {
+      const isClickGhostArea = e.target === getGhostArea();
+      const isClickController =
+        (e.target as HTMLDivElement)?.parentNode === controllerWrapper.current;
+
+      if (isClickGhostArea || isClickController) {
+        setControllerTransition(0);
+        isControlling.current = true;
+        touchPoint.current = {
+          left: e.clientX,
+          top: e.clientY,
+        };
+        updateControllerLocation(e);
+      }
+    };
+
     const onMouseMove = (e: MouseEvent) => {
       if (!isControlling.current) return;
       updateControllerLocation(e);
@@ -110,14 +116,16 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
       setControllerTransition(200);
     };
 
+    document.addEventListener('mousedown', onMouseDown);
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
 
     return () => {
+      document.removeEventListener('mousedown', onMouseDown);
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
-  }, [updateControllerLocation, initialControllerLocation]);
+  }, [updateControllerLocation, initialControllerLocation, getGhostArea]);
 
   const onChange = useThrottle(props.onChange, throttle);
   const onAngleChange = useThrottle(props.onAngleChange, throttle);
@@ -156,12 +164,12 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
   }, [controllerCls, controllerRadius, renderController]);
 
   return (
-    <div className={baseCls} style={baseStyle} ref={joystickDOM}>
+    <div className={baseCls} style={baseStyle}>
       <ArrowsWrapper renderArrows={props.renderArrows} direction={direction} />
       <ControllerWrapper
         location={controllerLocation}
-        onMouseDown={onMouseDown}
         transition={controllerTransition}
+        ref={controllerWrapper}
       >
         {controller}
       </ControllerWrapper>

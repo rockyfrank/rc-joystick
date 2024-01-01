@@ -102,3 +102,9 @@ export interface IRange {
   min: number;
   max: number;
 }
+
+export interface IGhostContextValue {
+  isActive: boolean;
+  ghost: boolean;
+  getGhostArea: () => HTMLDivElement | null;
+}
