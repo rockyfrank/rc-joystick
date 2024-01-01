@@ -1,0 +1,33 @@
+name: Build and Publish Storybook to GitHub Pages
+
+on:
+  push:
+    branches:
+      - feat/init # if any push happens on branch `main`, run this workflow. You could also add `paths` to detect changes in specific folder
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.1
+
+      # Set up Node
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16.20.2'
+
+      - name: Install and Build
+        run: |
+          yarn run build-storybook
+
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@3.6.2
+        with:
+          branch: gh-pages
+          folder: storybook-static # output folder from `npm run build-storybook`

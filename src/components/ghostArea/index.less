@@ -1,0 +1,21 @@
+.react-joystick-ghost-area {
+  position: relative;
+
+  .react-joystick-wrapper {
+    position: absolute;
+    width: 0;
+    height: 0;
+
+    .react-joystick {
+      transform: translate(-50%, -50%);
+      &.ghost {
+        transition: opacity 0.2s;
+        opacity: 0;
+      }
+
+      &.ghost-active {
+        opacity: 1;
+      }
+    }
+  }
+}

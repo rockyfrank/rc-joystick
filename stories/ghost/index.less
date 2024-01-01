@@ -1,0 +1,12 @@
+.ghost-mode-demo {
+  border: #ddd 1px solid;
+
+  &::before {
+    content: 'Click anywhere in the ghost area to show the joystick ～';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.3;
+  }
+}
