@@ -3,7 +3,7 @@ name: Build and Publish Storybook to GitHub Pages
 on:
   push:
     branches:
-      - feat/init # if any push happens on branch `main`, run this workflow. You could also add `paths` to detect changes in specific folder
+      - main # if any push happens on branch `main`, run this workflow. You could also add `paths` to detect changes in specific folder
 
 permissions:
   contents: write
