@@ -6,7 +6,7 @@ on:
       - feat/init # if any push happens on branch `main`, run this workflow. You could also add `paths` to detect changes in specific folder
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
