@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/npm/v/rc-joystick">
 </p>
 Joystick component built with React.
-[Here](https://rockyfrank.github.io/react-joystick/?path=/docs/example--docs) to see the storybook.
+[Here](https://rockyfrank.github.io/rc-joystick/?path=/docs/example--docs) to see the storybook.
 
 ## 📦 Installation
 
