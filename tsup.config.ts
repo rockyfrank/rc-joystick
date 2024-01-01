@@ -7,6 +7,9 @@ const baseConfig: Options = {
   clean: true,
   treeshake: true,
   esbuildPlugins: [lessLoader()],
+  banner: {
+    js: "import './index.css'",
+  },
 };
 
 export default defineConfig([

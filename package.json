@@ -1,6 +1,6 @@
 {
   "name": "rc-joystick",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "A react joystick widget",
   "main": "dist/lib/index.js",
   "module": "dist/es/index.js",
@@ -48,7 +48,8 @@
   "scripts": {
     "build": "tsup --dts",
     "start": "storybook dev -p 6006",
-    "build-storybook": "yarn && storybook build && touch ./storybook-static/.nojekyll"
+    "build-storybook": "yarn && storybook build && touch ./storybook-static/.nojekyll",
+    "prepublish": "yarn run build"
   },
   "dependencies": {
     "classnames": "^2.3.2",
