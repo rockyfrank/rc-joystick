@@ -1,4 +1,4 @@
-import { Direction } from './enums';
+import { Direction, DirectionCountMode } from './enums';
 
 export interface IJoystickChangeValue {
   direction: Direction;
@@ -31,6 +31,13 @@ export interface IJoystickProps {
    */
   insideMode?: boolean;
   /**
+   * direction count mode
+   * five for: Center、Right、Top、Left、Bottom
+   * nine for: Center、Right、RightTop、Top、TopLeft、Left、LeftBottom、Bottom、BottomRight
+   * @default DirectionCountMode.Five
+   */
+  directionCountMode?: DirectionCountMode;
+  /**
    * Trigger throttle (ms)
    * @default 0
    */
@@ -55,6 +62,21 @@ export interface IJoystickProps {
    * Custom render controller
    */
   renderController?: (props: IJoystickControllerProps) => React.ReactNode;
+  /**
+   * custom arrows render map
+   */
+  renderArrows?: ICustomArrowsRenderMap;
+}
+
+export interface IBaseArrowProps {
+  isActive: boolean;
+}
+
+export interface ICustomArrowsRenderMap {
+  [Direction.Top]?: React.FC<IBaseArrowProps>;
+  [Direction.Right]?: React.FC<IBaseArrowProps>;
+  [Direction.Bottom]?: React.FC<IBaseArrowProps>;
+  [Direction.Left]?: React.FC<IBaseArrowProps>;
 }
 
 export interface IJoystickControllerProps {

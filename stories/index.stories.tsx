@@ -41,7 +41,7 @@ export const CustomRenderController: Story = {
           style={{
             height: radius * 2,
             width: radius * 2,
-            background: 'linear-gradient(to bottom, rgb(255, 255, 255), rgb(134, 144, 154))',
+            opacity: 0.7,
           }}
           className={className}
         />

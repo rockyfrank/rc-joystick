@@ -1,6 +1,7 @@
 import { Direction, IRange } from '../typings';
+import { DirectionCountMode } from './../typings/enums';
 
-const directionAngleMap: Record<Direction, IRange[]> = {
+const nineDirectionAngleMap: Record<Direction, IRange[]> = {
   [Direction.Center]: [
     {
       min: 0,
@@ -61,12 +62,61 @@ const directionAngleMap: Record<Direction, IRange[]> = {
   ],
 };
 
-export const angleToDirection = (angle: number | undefined): Direction => {
+const fiveDirectionAngleMap: Record<
+  Exclude<
+    Direction,
+    Direction.BottomRight | Direction.LeftBottom | Direction.RightTop | Direction.TopLeft
+  >,
+  IRange[]
+> = {
+  [Direction.Center]: [
+    {
+      min: 0,
+      max: 0,
+    },
+  ],
+  [Direction.Top]: [
+    {
+      min: 45,
+      max: 135,
+    },
+  ],
+  [Direction.Left]: [
+    {
+      min: 135,
+      max: 225,
+    },
+  ],
+  [Direction.Bottom]: [
+    {
+      min: 225,
+      max: 315,
+    },
+  ],
+  [Direction.Right]: [
+    {
+      min: 315,
+      max: 360,
+    },
+    {
+      min: 0,
+      max: 45,
+    },
+  ],
+};
+
+export const angleToDirection = (
+  mode: DirectionCountMode,
+  angle: number | undefined,
+): Direction => {
   let direction = Direction.Center;
   if (angle === undefined) return direction;
 
+  const directionAngleMap =
+    mode === DirectionCountMode.Five ? fiveDirectionAngleMap : nineDirectionAngleMap;
+
   for (const key of Object.keys(directionAngleMap)) {
-    const ranges = directionAngleMap[key as Direction];
+    const ranges = directionAngleMap[key as keyof typeof directionAngleMap];
     const isInclude = ranges.some(({ min, max }) => {
       return angle >= min && angle < max;
     });

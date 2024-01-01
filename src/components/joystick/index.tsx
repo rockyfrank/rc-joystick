@@ -4,8 +4,9 @@ import classnames from 'classnames';
 import React from 'react';
 
 import { useThrottle } from '../../hooks/useThrottle';
-import { IJoystickProps, ILocation } from '../../typings';
+import { DirectionCountMode, IJoystickProps, ILocation } from '../../typings';
 import { angleToDirection, getAngle, getDOMLocation, getStyleByRadius } from '../../utils';
+import { ArrowsWrapper } from '../arrowsWrapper';
 import { Controller } from '../controller';
 import { ControllerWrapper } from '../controllerWrapper';
 
@@ -20,11 +21,16 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
     insideMode,
     throttle = 0,
     renderController,
+    directionCountMode = DirectionCountMode.Five,
   } = props;
   const joystickDOM = React.useRef<HTMLDivElement | null>(null);
   const [angle, setAngle] = React.useState<number | undefined>();
   const [distance, setDistance] = React.useState<number>(0);
-  const direction = angleToDirection(angle);
+
+  const direction = React.useMemo(() => {
+    return angleToDirection(directionCountMode, angle);
+  }, [angle, directionCountMode]);
+
   const joystickLocation = React.useRef<ILocation>({
     left: 0,
     top: 0,
@@ -157,6 +163,7 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
 
   return (
     <div className={baseCls} style={baseStyle} ref={joystickDOM}>
+      <ArrowsWrapper renderArrows={props.renderArrows} direction={direction} />
       <ControllerWrapper
         location={controllerLocation}
         onMouseDown={onMouseDown}

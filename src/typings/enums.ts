@@ -9,3 +9,14 @@ export enum Direction {
   Bottom = 'Bottom',
   BottomRight = 'BottomRight',
 }
+
+export enum DirectionCountMode {
+  /**
+   * Center、Right、Top、Left、Bottom
+   */
+  Five,
+  /**
+   * Center、Right、RightTop、Top、TopLeft、Left、LeftBottom、Bottom、BottomRight
+   */
+  Nine,
+}
