@@ -4,3 +4,4 @@ es
 lib
 .cache
 *.log
+storybook-static
