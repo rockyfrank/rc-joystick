@@ -5,7 +5,7 @@ import React from 'react';
 
 import { useThrottle } from '../../hooks/useThrottle';
 import { DirectionCountMode, IJoystickProps, ILocation } from '../../typings';
-import { angleToDirection, getAngle, getDOMLocation, getStyleByRadius } from '../../utils';
+import { angleToDirection, getAngle, getStyleByRadius } from '../../utils';
 import { ArrowsWrapper } from '../arrowsWrapper';
 import { Controller } from '../controller';
 import { ControllerWrapper } from '../controllerWrapper';
@@ -31,7 +31,7 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
     return angleToDirection(directionCountMode, angle);
   }, [angle, directionCountMode]);
 
-  const joystickLocation = React.useRef<ILocation>({
+  const touchPoint = React.useRef<ILocation>({
     left: 0,
     top: 0,
   });
@@ -52,11 +52,6 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
 
   const [controllerLocation, setControllerLocation] =
     React.useState<ILocation>(initialControllerLocation);
-
-  const updateJoystickLocation = React.useCallback(() => {
-    joystickLocation.current = getDOMLocation(joystickDOM.current);
-  }, []);
-
   const baseCls = classnames('react-joystick', className);
   const controllerCls = classnames('react-joystick-controller', controllerClassName);
 
@@ -64,19 +59,15 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
 
   const updateControllerLocation = React.useCallback(
     (e: MouseEvent) => {
-      const centerLocation = {
-        left: joystickLocation.current.left + baseRadius,
-        top: joystickLocation.current.top + baseRadius,
-      };
       const { clientX, clientY } = e;
-      const diffX = clientX - centerLocation.left;
-      const diffY = clientY - centerLocation.top;
+      const diffX = clientX - touchPoint.current.left;
+      const diffY = clientY - touchPoint.current.top;
       const distanceToCenter = Math.sqrt(diffX * diffX + diffY * diffY);
       setDistance(Math.min(distanceToCenter, outerRadius));
       if (distanceToCenter <= outerRadius) {
         setControllerLocation({
-          left: clientX - joystickLocation.current.left - controllerRadius,
-          top: clientY - joystickLocation.current.top - controllerRadius,
+          left: diffX + (baseRadius - controllerRadius),
+          top: diffY + (baseRadius - controllerRadius),
         });
       } else {
         const ratio = outerRadius / distanceToCenter;
@@ -88,17 +79,20 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
       }
       setAngle(getAngle(diffX, diffY));
     },
-    [insideMode, outerRadius, controllerRadius, baseRadius, joystickLocation],
+    [outerRadius, baseRadius, controllerRadius, insideMode],
   );
 
   const onMouseDown = React.useCallback<MouseEventHandler>(
     (e) => {
       setControllerTransition(0);
       isControlling.current = true;
-      updateJoystickLocation();
+      touchPoint.current = {
+        left: e.clientX,
+        top: e.clientY,
+      };
       updateControllerLocation(e.nativeEvent);
     },
-    [updateControllerLocation, updateJoystickLocation],
+    [updateControllerLocation],
   );
 
   React.useEffect(() => {

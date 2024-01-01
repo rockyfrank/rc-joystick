@@ -2,13 +2,11 @@ import { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 
 import { Joystick } from '../src/components/joystick';
-import { IJoystickChangeValue } from '../src/typings';
+import { DirectionCountMode, IJoystickChangeValue, IJoystickProps } from '../src/typings';
 
-interface IAddListenersDemo {
-  throttle?: number;
-}
+type IAddListenersDemo = Pick<IJoystickProps, 'throttle' | 'directionCountMode'>;
 
-const AddListenersDemo: React.FC<IAddListenersDemo> = ({ throttle = 0 }) => {
+const AddListenersDemo: React.FC<IAddListenersDemo> = ({ throttle = 0, directionCountMode }) => {
   const [value, setValue] = React.useState<IJoystickChangeValue>();
 
   return (
@@ -21,7 +19,7 @@ const AddListenersDemo: React.FC<IAddListenersDemo> = ({ throttle = 0 }) => {
         flexDirection: 'column',
       }}
     >
-      <Joystick onChange={setValue} throttle={throttle} />
+      <Joystick onChange={setValue} throttle={throttle} directionCountMode={directionCountMode} />
       <div style={{ width: '100%', userSelect: 'none' }}>
         <div style={{ marginTop: 48 }}>angle: {value?.angle}</div>
         <div>direction: {value?.direction}</div>
@@ -49,5 +47,11 @@ export const AddListener: Story = {};
 export const ThrottleTrigger: Story = {
   args: {
     throttle: 200,
+  },
+};
+
+export const NineDirection: Story = {
+  args: {
+    directionCountMode: DirectionCountMode.Nine,
   },
 };
