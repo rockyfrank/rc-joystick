@@ -2,7 +2,7 @@
 
 <p>
   <img src="https://img.shields.io/npm/v/rc-joystick">
-  <img src="https://img.shields.io/bundlephobia/min/rc-joystick?color=%2322af90">
+  <img src="https://img.shields.io/bundlephobia/min/rc-joystick?color=%2322af91">
 </p>
 Joystick component built with React.
 Click <a href="https://rockyfrank.github.io/rc-joystick/?path=/docs/example--docs">here</a> to see the storybook.
