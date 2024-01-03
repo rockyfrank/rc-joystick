@@ -1,9 +1,10 @@
 import './index.less';
 
 import classNames from 'classnames';
-import React, { MouseEventHandler, PropsWithChildren } from 'react';
+import React, { MouseEventHandler, PropsWithChildren, TouchEventHandler } from 'react';
+import { isMobile } from 'react-device-detect';
 
-import { GhostContext } from '../../context';
+import { GhostAreaInstanceContext, GhostContext } from '../../context';
 import { IGhostContextValue, ILocation } from '../../typings';
 
 export interface IGhostAreaProps extends Pick<React.CSSProperties, 'width' | 'height'> {
@@ -20,11 +21,11 @@ export const GhostArea: React.FC<PropsWithChildren<IGhostAreaProps>> = ({
   const [activeLocation, setActiveLocation] = React.useState<ILocation | null>(null);
   const [isActive, setIsActive] = React.useState<boolean>(false);
 
-  const onMouseDown = React.useCallback<MouseEventHandler>((e) => {
+  const onDragStart = React.useCallback((clientX: number, clientY: number) => {
     if (!area.current) return;
     const { left, top, width: w, height: h } = area.current.getBoundingClientRect();
-    const nextLeft = e.clientX - left;
-    const nextTop = e.clientY - top;
+    const nextLeft = clientX - left;
+    const nextTop = clientY - top;
     const isValid = nextTop >= 0 && nextTop <= h && w >= 0 && nextLeft <= w;
 
     if (!isValid) return;
@@ -35,23 +36,46 @@ export const GhostArea: React.FC<PropsWithChildren<IGhostAreaProps>> = ({
     setIsActive(true);
   }, []);
 
+  const onMouseDown = React.useCallback<MouseEventHandler>(
+    (e) => {
+      if (isMobile) return;
+      onDragStart(e.clientX, e.clientY);
+    },
+    [onDragStart],
+  );
+
+  const onTouchStart = React.useCallback<TouchEventHandler>(
+    ({ touches }) => {
+      if (!isMobile) return;
+      const touch = touches[0];
+      onDragStart(touch.clientX, touch.clientY);
+    },
+    [onDragStart],
+  );
+
   const ghostProviderValue = React.useMemo((): IGhostContextValue => {
     return {
       isActive,
       ghost: true,
-      getGhostArea: () => area.current,
     };
   }, [isActive]);
+
+  const ghostAreaInstanceValue = React.useMemo(() => {
+    return {
+      getGhostArea: () => area.current,
+    };
+  }, []);
 
   const onMouseUp = React.useCallback(() => {
     setIsActive(false);
   }, []);
 
   React.useEffect(() => {
-    document.addEventListener('mouseup', onMouseUp);
+    const eventName = isMobile ? 'touchend' : 'mouseup';
+    document.addEventListener(eventName, onMouseUp);
 
     return () => {
-      document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener(eventName, onMouseUp);
     };
   }, [onMouseUp]);
 
@@ -64,12 +88,20 @@ export const GhostArea: React.FC<PropsWithChildren<IGhostAreaProps>> = ({
   }, [height, width]);
 
   return (
-    <div ref={area} className={cls} onMouseDown={onMouseDown} style={style}>
+    <div
+      ref={area}
+      className={cls}
+      onMouseDown={onMouseDown}
+      onTouchStart={onTouchStart}
+      style={style}
+    >
       <div
         className="react-joystick-wrapper"
         style={{ left: activeLocation?.left, top: activeLocation?.top }}
       >
-        <GhostContext.Provider value={ghostProviderValue}>{children}</GhostContext.Provider>
+        <GhostAreaInstanceContext.Provider value={ghostAreaInstanceValue}>
+          <GhostContext.Provider value={ghostProviderValue}>{children}</GhostContext.Provider>
+        </GhostAreaInstanceContext.Provider>
       </div>
     </div>
   );

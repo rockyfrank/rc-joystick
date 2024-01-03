@@ -2,8 +2,9 @@ import './index.less';
 
 import classnames from 'classnames';
 import React from 'react';
+import { isMobile } from 'react-device-detect';
 
-import { GhostContext } from '../../context';
+import { GhostAreaInstanceContext, GhostContext } from '../../context';
 import { useThrottle } from '../../hooks/useThrottle';
 import { DirectionCount, IJoystickProps, ILocation } from '../../typings';
 import { angleToDirection, getAngle, getStyleByRadius } from '../../utils';
@@ -51,7 +52,8 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
 
   const [controllerLocation, setControllerLocation] =
     React.useState<ILocation>(initialControllerLocation);
-  const { ghost, isActive, getGhostArea } = React.useContext(GhostContext);
+  const { ghost, isActive } = React.useContext(GhostContext);
+  const { getGhostArea } = React.useContext(GhostAreaInstanceContext);
   const baseCls = classnames('react-joystick', className, {
     ghost,
     'ghost-active': isActive,
@@ -61,8 +63,7 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
   const baseStyle = getStyleByRadius(baseRadius);
 
   const updateControllerLocation = React.useCallback(
-    (e: MouseEvent) => {
-      const { clientX, clientY } = e;
+    (clientX: number, clientY: number) => {
       const diffX = clientX - touchPoint.current.left;
       const diffY = clientY - touchPoint.current.top;
       const distanceToCenter = Math.sqrt(diffX * diffX + diffY * diffY);
@@ -86,25 +87,25 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
   );
 
   React.useEffect(() => {
-    const onMouseDown = (e: MouseEvent) => {
+    const onMouseDown = (e: MouseEvent | Touch) => {
       const isClickGhostArea = e.target === getGhostArea();
       const isClickController =
         (e.target as HTMLDivElement)?.parentNode === controllerWrapper.current;
 
       if (isClickGhostArea || isClickController) {
-        setControllerTransition(0);
         isControlling.current = true;
+        setControllerTransition(0);
         touchPoint.current = {
           left: e.clientX,
           top: e.clientY,
         };
-        updateControllerLocation(e);
+        updateControllerLocation(e.clientX, e.clientY);
       }
     };
 
-    const onMouseMove = (e: MouseEvent) => {
+    const onMouseMove = (e: MouseEvent | Touch) => {
       if (!isControlling.current) return;
-      updateControllerLocation(e);
+      updateControllerLocation(e.clientX, e.clientY);
     };
 
     const onMouseUp = () => {
@@ -116,14 +117,36 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
       setControllerTransition(200);
     };
 
-    document.addEventListener('mousedown', onMouseDown);
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
+    const onTouchStart = (e: TouchEvent) => {
+      onMouseDown(e.touches[0]);
+    };
+    const onTouchMove = ({ touches }: TouchEvent) => {
+      onMouseMove(touches[0]);
+    };
+    const onTouchEnd = () => {
+      onMouseUp();
+    };
+
+    if (isMobile) {
+      document.addEventListener('touchstart', onTouchStart);
+      document.addEventListener('touchmove', onTouchMove);
+      document.addEventListener('touchend', onTouchEnd);
+    } else {
+      document.addEventListener('mousedown', onMouseDown);
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    }
 
     return () => {
-      document.removeEventListener('mousedown', onMouseDown);
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
+      if (isMobile) {
+        document.removeEventListener('touchstart', onTouchStart);
+        document.removeEventListener('touchmove', onTouchMove);
+        document.removeEventListener('touchend', onTouchEnd);
+      } else {
+        document.removeEventListener('mousedown', onMouseDown);
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+      }
     };
   }, [updateControllerLocation, initialControllerLocation, getGhostArea]);
 

@@ -9,12 +9,11 @@
     .react-joystick {
       transform: translate(-50%, -50%);
       &.ghost {
-        transition: opacity 0.2s;
-        opacity: 0;
+        visibility: hidden;
       }
 
       &.ghost-active {
-        opacity: 1;
+        visibility: visible;
       }
     }
   }
