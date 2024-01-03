@@ -106,5 +106,4 @@ export interface IRange {
 export interface IGhostContextValue {
   isActive: boolean;
   ghost: boolean;
-  getGhostArea: () => HTMLDivElement | null;
 }
