@@ -2,10 +2,10 @@ import './index.less';
 
 import classNames from 'classnames';
 import React, { MouseEventHandler, PropsWithChildren, TouchEventHandler } from 'react';
-import { isMobile } from 'react-device-detect';
 
 import { GhostAreaInstanceContext, GhostContext } from '../../context';
 import { IGhostContextValue, ILocation } from '../../typings';
+import { isMobile } from '../../utils/env';
 
 export interface IGhostAreaProps extends Pick<React.CSSProperties, 'width' | 'height'> {
   className?: string;
@@ -38,7 +38,7 @@ export const GhostArea: React.FC<PropsWithChildren<IGhostAreaProps>> = ({
 
   const onMouseDown = React.useCallback<MouseEventHandler>(
     (e) => {
-      if (isMobile) return;
+      if (isMobile()) return;
       onDragStart(e.clientX, e.clientY);
     },
     [onDragStart],
@@ -46,7 +46,7 @@ export const GhostArea: React.FC<PropsWithChildren<IGhostAreaProps>> = ({
 
   const onTouchStart = React.useCallback<TouchEventHandler>(
     ({ touches }) => {
-      if (!isMobile) return;
+      if (!isMobile()) return;
       const touch = touches[0];
       onDragStart(touch.clientX, touch.clientY);
     },
@@ -71,7 +71,7 @@ export const GhostArea: React.FC<PropsWithChildren<IGhostAreaProps>> = ({
   }, []);
 
   React.useEffect(() => {
-    const eventName = isMobile ? 'touchend' : 'mouseup';
+    const eventName = isMobile() ? 'touchend' : 'mouseup';
     document.addEventListener(eventName, onMouseUp);
 
     return () => {
