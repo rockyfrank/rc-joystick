@@ -1,4 +1,4 @@
-import{J as R,j as S}from"./index-a0e9bad7.js";import"./isSymbol-659cbca8.js";import"./_commonjsHelpers-de833af9.js";import"./throttle-7cfb2d79.js";const f={title:"Example",component:R,parameters:{layout:"centered"},tags:["autodocs"]},e={},r={args:{insideMode:!0}},s={args:{baseRadius:30,controllerRadius:20}},a={args:{renderController:({radius:o,className:y})=>S("div",{style:{height:o*2,width:o*2,opacity:.7},className:y})}};var t,n,c;e.parameters={...e.parameters,docs:{...(t=e.parameters)==null?void 0:t.docs,source:{originalSource:"{}",...(c=(n=e.parameters)==null?void 0:n.docs)==null?void 0:c.source}}};var d,i,m;r.parameters={...r.parameters,docs:{...(d=r.parameters)==null?void 0:d.docs,source:{originalSource:`{
+import{J as R,j as S}from"./index-4cc017f5.js";import"./isSymbol-659cbca8.js";import"./_commonjsHelpers-de833af9.js";import"./throttle-7cfb2d79.js";const f={title:"Example",component:R,parameters:{layout:"centered"},tags:["autodocs"]},e={},r={args:{insideMode:!0}},s={args:{baseRadius:30,controllerRadius:20}},a={args:{renderController:({radius:o,className:y})=>S("div",{style:{height:o*2,width:o*2,opacity:.7},className:y})}};var t,n,c;e.parameters={...e.parameters,docs:{...(t=e.parameters)==null?void 0:t.docs,source:{originalSource:"{}",...(c=(n=e.parameters)==null?void 0:n.docs)==null?void 0:c.source}}};var d,i,m;r.parameters={...r.parameters,docs:{...(d=r.parameters)==null?void 0:d.docs,source:{originalSource:`{
   args: {
     insideMode: true
   }
@@ -21,4 +21,4 @@ import{J as R,j as S}from"./index-a0e9bad7.js";import"./isSymbol-659cbca8.js";im
     }
   }
 }`,...(h=(C=a.parameters)==null?void 0:C.docs)==null?void 0:h.source}}};const j=["Basic","InsideMode","CustomSize","CustomRenderController"];export{e as Basic,a as CustomRenderController,s as CustomSize,r as InsideMode,j as __namedExportsOrder,f as default};
-//# sourceMappingURL=index.stories-5a67cd7f.js.map
+//# sourceMappingURL=index.stories-1df4e00e.js.map
