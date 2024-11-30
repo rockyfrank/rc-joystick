@@ -2,12 +2,12 @@ import './index.less';
 
 import classnames from 'classnames';
 import React from 'react';
-import { isMobile } from 'react-device-detect';
 
 import { GhostAreaInstanceContext, GhostContext } from '../../context';
 import { useThrottle } from '../../hooks/useThrottle';
 import { DirectionCount, IJoystickProps, ILocation } from '../../typings';
 import { angleToDirection, getAngle, getStyleByRadius } from '../../utils';
+import { isMobile } from '../../utils/env';
 import { ArrowsWrapper } from '../arrowsWrapper';
 import { Controller } from '../controller';
 import { ControllerWrapper } from '../controllerWrapper';
@@ -87,7 +87,7 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
   );
 
   React.useEffect(() => {
-    const onMouseDown = (e: MouseEvent | Touch) => {
+    const handleMouseDown = (e: MouseEvent | Touch) => {
       const isClickGhostArea = e.target === getGhostArea();
       const isClickController =
         (e.target as HTMLDivElement)?.parentNode === controllerWrapper.current;
@@ -103,12 +103,12 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
       }
     };
 
-    const onMouseMove = (e: MouseEvent | Touch) => {
+    const handleMouseMove = (e: MouseEvent | Touch) => {
       if (!isControlling.current) return;
       updateControllerLocation(e.clientX, e.clientY);
     };
 
-    const onMouseUp = () => {
+    const handleMouseUp = () => {
       if (!isControlling.current) return;
       isControlling.current = false;
       setAngle(undefined);
@@ -117,36 +117,50 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
       setControllerTransition(200);
     };
 
-    const onTouchStart = (e: TouchEvent) => {
-      onMouseDown(e.touches[0]);
-    };
-    const onTouchMove = ({ touches }: TouchEvent) => {
-      onMouseMove(touches[0]);
-    };
-    const onTouchEnd = () => {
-      onMouseUp();
+    const onMouseDown = (e: MouseEvent | Touch) => {
+      if (isMobile()) return;
+      handleMouseDown(e);
     };
 
-    if (isMobile) {
-      document.addEventListener('touchstart', onTouchStart);
-      document.addEventListener('touchmove', onTouchMove);
-      document.addEventListener('touchend', onTouchEnd);
-    } else {
-      document.addEventListener('mousedown', onMouseDown);
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
-    }
+    const onMouseMove = (e: MouseEvent | Touch) => {
+      if (isMobile()) return;
+      handleMouseMove(e);
+    };
+
+    const onMouseUp = () => {
+      if (isMobile()) return;
+      handleMouseUp();
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (!isMobile()) return;
+      handleMouseDown(e.touches[0]);
+    };
+
+    const onTouchMove = ({ touches }: TouchEvent) => {
+      if (!isMobile()) return;
+      handleMouseMove(touches[0]);
+    };
+
+    const onTouchEnd = () => {
+      if (!isMobile()) return;
+      handleMouseUp();
+    };
+
+    document.addEventListener('touchstart', onTouchStart);
+    document.addEventListener('touchmove', onTouchMove);
+    document.addEventListener('touchend', onTouchEnd);
+    document.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
 
     return () => {
-      if (isMobile) {
-        document.removeEventListener('touchstart', onTouchStart);
-        document.removeEventListener('touchmove', onTouchMove);
-        document.removeEventListener('touchend', onTouchEnd);
-      } else {
-        document.removeEventListener('mousedown', onMouseDown);
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-      }
+      document.removeEventListener('touchstart', onTouchStart);
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', onTouchEnd);
+      document.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
     };
   }, [updateControllerLocation, initialControllerLocation, getGhostArea]);
 
