@@ -14,6 +14,12 @@
     "module": "es6",
     "moduleResolution": "node"
   },
-  "include": ["./src/**/*.tsx", "./src/**/*.ts"],
+  "include": [
+    "./src/**/*.tsx",
+    "./src/**/*.ts",
+    "./stories/**/*.tsx",
+    "./stories/**/*.ts",
+    "./scripts/**/*.ts"
+  ],
   "exclude": ["node_modules", "dist", "es", "lib"]
 }

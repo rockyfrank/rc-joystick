@@ -8,64 +8,88 @@ export interface IJoystickChangeValue {
 
 export interface IJoystickProps {
   /**
-   * joystick container's extra className
+   * @description Joystick container's extra className
    */
   className?: string;
   /**
-   * joystick controller's extra className
+   * @description Joystick controller's extra className
    */
   controllerClassName?: string;
   /**
-   * joystick base radius
+   * @description Joystick base radius
    * @default 75
    */
   baseRadius?: number;
   /**
-   * joystick controller radius
+   * @description Joystick controller radius
    * @default 35
    */
   controllerRadius?: number;
   /**
-   * controller will always be inside joystick's base if `insideMode` is true
+   * @description Controller will always be inside joystick's base if `insideMode` is true
    * @default false
    */
   insideMode?: boolean;
   /**
-   * direction count mode
-   * five for: Center、Right、Top、Left、Bottom
-   * nine for: Center、Right、RightTop、Top、TopLeft、Left、LeftBottom、Bottom、BottomRight
+   * @description Direction count mode
+   * **Five**: Center、Right、Top、Left、Bottom
+   * **Nine**: Center、Right、RightTop、Top、TopLeft、Left、LeftBottom、Bottom、BottomRight
    * @default DirectionCount.Five
    */
   directionCount?: DirectionCount;
   /**
-   * Trigger throttle (ms)
+   * @description Trigger throttle (ms)
    * @default 0
    */
   throttle?: number;
   /**
-   * Trigger when the any of angle/direction/distance state is changing
+   * @description Trigger when the any of angle/direction/distance state is changing
    */
   onChange?: (val: IJoystickChangeValue) => void;
   /**
-   * Trigger when the angle state is changing
+   * @description Trigger when the angle state is changing
    */
   onAngleChange?: (angle?: number) => void;
   /**
-   * Trigger when the direction state is changing
+   * @description Trigger when the direction state is changing
    */
-  onDirectionChange?: (direction: Direction) => void;
+  onDirectionChange?: (direction: Direction | keyof typeof Direction) => void;
   /**
-   * Trigger when the distance state is changing
+   * @description Trigger when the distance state is changing
    */
   onDistanceChange?: (distance: number) => void;
   /**
-   * Custom render controller
+   * @description Custom render controller
    */
   renderController?: (props: IJoystickControllerProps) => React.ReactNode;
   /**
-   * custom arrows render map
+   * @description Custom arrows render map
    */
   renderArrows?: ICustomArrowsRenderMap;
+  /**
+   * @description Disable joystick
+   * @default false
+   */
+  disabled?: boolean;
+  /**
+   * @description Trigger when the active state is changing
+   */
+  onActiveChange?: (active: boolean) => void;
+  /**
+   * @description Auto reset joystick to origin when joystick is inactive
+   * @default false
+   */
+  autoReset?: boolean;
+  /**
+   * @description Lock X axis
+   * @default false
+   */
+  lockX?: boolean;
+  /**
+   * @description Lock Y axis
+   * @default false
+   */
+  lockY?: boolean;
 }
 
 export interface IBaseArrowProps {
@@ -106,4 +130,11 @@ export interface IRange {
 export interface IGhostContextValue {
   isActive: boolean;
   ghost: boolean;
+}
+
+export interface IJoystickRef {
+  /**
+   * @description Reset joystick to origin
+   */
+  reset: () => void;
 }
