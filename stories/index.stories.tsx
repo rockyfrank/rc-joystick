@@ -49,3 +49,24 @@ export const CustomRenderController: Story = {
     },
   },
 };
+
+export const Disabled: Story = {
+  args: {
+    disabled: true,
+    onChange(val) {
+      console.log('onChange', val);
+    },
+  },
+};
+
+export const LockX: Story = {
+  args: {
+    lockX: true,
+  },
+};
+
+export const LockY: Story = {
+  args: {
+    lockY: true,
+  },
+};

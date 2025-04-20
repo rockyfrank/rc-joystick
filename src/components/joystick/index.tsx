@@ -1,18 +1,18 @@
 import './index.less';
 
 import classnames from 'classnames';
-import React from 'react';
+import React, { forwardRef } from 'react';
 
 import { GhostAreaInstanceContext, GhostContext } from '../../context';
 import { useThrottle } from '../../hooks/useThrottle';
-import { DirectionCount, IJoystickProps, ILocation } from '../../typings';
+import { DirectionCount, IJoystickProps, IJoystickRef, ILocation } from '../../typings';
 import { angleToDirection, getAngle, getStyleByRadius } from '../../utils';
 import { isMobile } from '../../utils/env';
 import { ArrowsWrapper } from '../arrowsWrapper';
 import { Controller } from '../controller';
 import { ControllerWrapper } from '../controllerWrapper';
 
-export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
+const JoystickWithRef = forwardRef<IJoystickRef, IJoystickProps>((props, ref) => {
   const {
     className = '',
     controllerClassName = '',
@@ -22,6 +22,11 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
     throttle = 0,
     renderController,
     directionCount = DirectionCount.Five,
+    disabled = false,
+    onActiveChange,
+    autoReset = true,
+    lockX,
+    lockY,
   } = props;
   const [angle, setAngle] = React.useState<number | undefined>();
   const [distance, setDistance] = React.useState<number>(0);
@@ -31,9 +36,13 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
     return angleToDirection(directionCount, angle);
   }, [angle, directionCount]);
 
-  const touchPoint = React.useRef<ILocation>({
+  const touchStartPoint = React.useRef<ILocation>({
     left: 0,
     top: 0,
+  });
+  const lastDiff = React.useRef({
+    x: 0,
+    y: 0,
   });
   const isControlling = React.useRef(false);
   const [controllerTransition, setControllerTransition] = React.useState(0);
@@ -57,34 +66,70 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
   const baseCls = classnames('react-joystick', className, {
     ghost,
     'ghost-active': isActive,
+    'react-joystick-disabled': disabled,
   });
   const controllerCls = classnames('react-joystick-controller', controllerClassName);
 
   const baseStyle = getStyleByRadius(baseRadius);
 
-  const updateControllerLocation = React.useCallback(
+  const calcLocation = React.useCallback(
     (clientX: number, clientY: number) => {
-      const diffX = clientX - touchPoint.current.left;
-      const diffY = clientY - touchPoint.current.top;
+      let diffX = clientX - touchStartPoint.current.left + (autoReset ? 0 : lastDiff.current.x);
+      let diffY = clientY - touchStartPoint.current.top + (autoReset ? 0 : lastDiff.current.y);
+      if (lockX) {
+        diffX = 0;
+      }
+      if (lockY) {
+        diffY = 0;
+      }
       const distanceToCenter = Math.sqrt(diffX * diffX + diffY * diffY);
-      setDistance(Math.min(distanceToCenter, outerRadius));
+      const angle = getAngle(diffX, diffY);
+      const distance = Math.min(distanceToCenter, outerRadius);
       if (distanceToCenter <= outerRadius) {
-        setControllerLocation({
-          left: diffX + (baseRadius - controllerRadius),
-          top: diffY + (baseRadius - controllerRadius),
-        });
-      } else {
-        const ratio = outerRadius / distanceToCenter;
-        const diff = insideMode ? outerRadius : outerRadius - controllerRadius;
-        setControllerLocation({
+        return {
+          location: {
+            left: diffX + (baseRadius - controllerRadius),
+            top: diffY + (baseRadius - controllerRadius),
+          },
+          angle,
+          distance,
+        };
+      }
+
+      const ratio = outerRadius / distanceToCenter;
+      const diff = insideMode ? outerRadius : outerRadius - controllerRadius;
+      return {
+        location: {
           left: diffX * ratio + diff,
           top: diffY * ratio + diff,
-        });
-      }
-      setAngle(getAngle(diffX, diffY));
+        },
+        angle,
+        distance,
+      };
     },
-    [outerRadius, baseRadius, controllerRadius, insideMode],
+    [autoReset, lockX, lockY, outerRadius, baseRadius, controllerRadius, insideMode],
   );
+
+  const updateControllerLocation = React.useCallback(
+    (clientX: number, clientY: number) => {
+      const next = calcLocation(clientX, clientY);
+      setControllerLocation(next.location);
+      setAngle(next.angle);
+      setDistance(next.distance);
+    },
+    [calcLocation],
+  );
+
+  const reset = React.useCallback(() => {
+    setAngle(undefined);
+    setDistance(0);
+    setControllerLocation(initialControllerLocation);
+    setControllerTransition(200);
+    lastDiff.current = {
+      x: 0,
+      y: 0,
+    };
+  }, [initialControllerLocation]);
 
   React.useEffect(() => {
     const handleMouseDown = (e: MouseEvent | Touch) => {
@@ -95,11 +140,12 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
       if (isClickGhostArea || isClickController) {
         isControlling.current = true;
         setControllerTransition(0);
-        touchPoint.current = {
+        touchStartPoint.current = {
           left: e.clientX,
           top: e.clientY,
         };
         updateControllerLocation(e.clientX, e.clientY);
+        onActiveChange?.(true);
       }
     };
 
@@ -108,13 +154,21 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
       updateControllerLocation(e.clientX, e.clientY);
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (_e: MouseEvent | Touch) => {
       if (!isControlling.current) return;
       isControlling.current = false;
-      setAngle(undefined);
-      setDistance(0);
-      setControllerLocation(initialControllerLocation);
-      setControllerTransition(200);
+      onActiveChange?.(false);
+      if (autoReset) {
+        reset();
+      } else {
+        setControllerLocation((loc) => {
+          lastDiff.current = {
+            x: loc.left - initialControllerLocation.left,
+            y: loc.top - initialControllerLocation.top,
+          };
+          return loc;
+        });
+      }
     };
 
     const onMouseDown = (e: MouseEvent | Touch) => {
@@ -127,9 +181,9 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
       handleMouseMove(e);
     };
 
-    const onMouseUp = () => {
+    const onMouseUp = (e: MouseEvent | Touch) => {
       if (isMobile()) return;
-      handleMouseUp();
+      handleMouseUp(e);
     };
 
     const onTouchStart = (e: TouchEvent) => {
@@ -142,10 +196,12 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
       handleMouseMove(touches[0]);
     };
 
-    const onTouchEnd = () => {
+    const onTouchEnd = (e: TouchEvent) => {
       if (!isMobile()) return;
-      handleMouseUp();
+      handleMouseUp(e.touches[0]);
     };
+
+    if (disabled) return;
 
     document.addEventListener('touchstart', onTouchStart);
     document.addEventListener('touchmove', onTouchMove);
@@ -162,7 +218,15 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
-  }, [updateControllerLocation, initialControllerLocation, getGhostArea]);
+  }, [
+    updateControllerLocation,
+    initialControllerLocation,
+    getGhostArea,
+    disabled,
+    onActiveChange,
+    autoReset,
+    reset,
+  ]);
 
   const onChange = useThrottle(props.onChange, throttle);
   const onAngleChange = useThrottle(props.onAngleChange, throttle);
@@ -200,6 +264,14 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
     return <Controller radius={controllerRadius} className={controllerCls} />;
   }, [controllerCls, controllerRadius, renderController]);
 
+  React.useImperativeHandle(
+    ref,
+    () => ({
+      reset,
+    }),
+    [reset],
+  );
+
   return (
     <div className={baseCls} style={baseStyle}>
       <ArrowsWrapper renderArrows={props.renderArrows} direction={direction} />
@@ -213,3 +285,5 @@ export const Joystick: React.FC<IJoystickProps> = React.memo((props) => {
     </div>
   );
 });
+
+export const Joystick = React.memo(JoystickWithRef);

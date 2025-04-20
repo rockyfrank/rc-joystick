@@ -1,0 +1,14 @@
+# 忽略 README.md 文件的格式化
+README.md
+
+# 忽略构建输出目录
+dist/
+build/
+
+# 忽略依赖目录
+node_modules/
+
+# 忽略包管理器锁文件
+yarn.lock
+package-lock.json
+pnpm-lock.yaml 
