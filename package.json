@@ -11,7 +11,7 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "repository": "git@github.com:rockyfrank/react-joystick.git",
+  "repository": "git@github.com:rockyfrank/rc-joystick.git",
   "author": "rockyfrank <532323969@qq.com>",
   "license": "MIT",
   "devDependencies": {
