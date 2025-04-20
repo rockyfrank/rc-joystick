@@ -25,9 +25,7 @@ jobs:
       - name: Run tests with coverage
         run: yarn test:coverage
 
-      - name: Upload coverage results to Codecov.io
-        uses: codecov/codecov-action@v2
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
         with:
-          token: ${{secrets.CODECOV_TOKEN}}
-          files: ./coverage/lcov.info
-          version: 'v0.1.15'
+          token: ${{ secrets.CODECOV_TOKEN }}

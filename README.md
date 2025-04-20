@@ -3,7 +3,7 @@
 <p>
   <img src="https://img.shields.io/npm/v/rc-joystick">
   <img src="https://img.shields.io/bundlephobia/min/rc-joystick">
-  <img src="https://codecov.io/gh/rockyfrank/react-joystick/branch/master/graph/badge.svg">
+  <img src="https://codecov.io/gh/rockyfrank/react-joystick/branch/feat/v1.1.0/graph/badge.svg">
   <img src="https://img.shields.io/npm/dm/rc-joystick">
   <img src="https://img.shields.io/npm/l/rc-joystick">
 </p>
