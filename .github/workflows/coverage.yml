@@ -1,4 +1,4 @@
-name: Coverage
+name: Run Coverage & Upload to Codecov
 
 on:
   push:
@@ -25,11 +25,9 @@ jobs:
       - name: Run tests with coverage
         run: yarn test:coverage
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+      - name: Upload coverage results to Codecov.io
+        uses: codecov/codecov-action@v2
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{secrets.CODECOV_TOKEN}}
           files: ./coverage/lcov.info
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: true
+          version: 'v0.1.15'
