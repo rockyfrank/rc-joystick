@@ -3,9 +3,7 @@
 <p>
   <img src="https://img.shields.io/npm/v/rc-joystick">
   <img src="https://img.shields.io/bundlephobia/min/rc-joystick">
-  <a href="https://codecov.io/gh/rockyfrank/rc-joystick" > 
-    <img src="https://codecov.io/gh/rockyfrank/rc-joystick/graph/badge.svg?token=8OBBIJL0VN"/>
-  </a>
+  <a href="https://codecov.io/gh/rockyfrank/rc-joystick" ><img src="https://codecov.io/gh/rockyfrank/rc-joystick/graph/badge.svg?token=8OBBIJL0VN"/></a>
   <img src="https://img.shields.io/npm/dm/rc-joystick">
   <img src="https://img.shields.io/npm/l/rc-joystick">
 </p>
