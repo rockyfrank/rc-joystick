@@ -1,10 +1,8 @@
 name: Run Coverage & Upload to Codecov
 
 on:
-  push:
-    branches: [feat/v1.1.0]
   pull_request:
-    branches: [feat/v1.1.0]
+    branches: [master]
 
 jobs:
   test:
