@@ -19,7 +19,9 @@
     "./src/**/*.ts",
     "./stories/**/*.tsx",
     "./stories/**/*.ts",
-    "./scripts/**/*.ts"
+    "./scripts/**/*.ts",
+    "./tests/**/*.tsx",
+    "./tests/**/*.ts"
   ],
   "exclude": ["node_modules", "dist", "es", "lib"]
 }

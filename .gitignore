@@ -5,3 +5,4 @@ lib
 .cache
 *.log
 storybook-static
+coverage

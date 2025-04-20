@@ -134,7 +134,7 @@ export interface IGhostContextValue {
 
 export interface IJoystickRef {
   /**
-   * @description Reset joystick to origin
+   * @description Reset joystick controller to origin
    */
   reset: () => void;
 }

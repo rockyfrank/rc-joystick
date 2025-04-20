@@ -72,7 +72,7 @@ const JoystickWithRef = forwardRef<IJoystickRef, IJoystickProps>((props, ref) =>
 
   const baseStyle = getStyleByRadius(baseRadius);
 
-  const updateControllerLocation = React.useCallback(
+  const calcLocation = React.useCallback(
     (clientX: number, clientY: number) => {
       let diffX = clientX - touchStartPoint.current.left + (autoReset ? 0 : lastDiff.current.x);
       let diffY = clientY - touchStartPoint.current.top + (autoReset ? 0 : lastDiff.current.y);
@@ -83,23 +83,41 @@ const JoystickWithRef = forwardRef<IJoystickRef, IJoystickProps>((props, ref) =>
         diffY = 0;
       }
       const distanceToCenter = Math.sqrt(diffX * diffX + diffY * diffY);
-      setDistance(Math.min(distanceToCenter, outerRadius));
+      const angle = getAngle(diffX, diffY);
+      const distance = Math.min(distanceToCenter, outerRadius);
       if (distanceToCenter <= outerRadius) {
-        setControllerLocation({
-          left: diffX + (baseRadius - controllerRadius),
-          top: diffY + (baseRadius - controllerRadius),
-        });
-      } else {
-        const ratio = outerRadius / distanceToCenter;
-        const diff = insideMode ? outerRadius : outerRadius - controllerRadius;
-        setControllerLocation({
+        return {
+          location: {
+            left: diffX + (baseRadius - controllerRadius),
+            top: diffY + (baseRadius - controllerRadius),
+          },
+          angle,
+          distance,
+        };
+      }
+
+      const ratio = outerRadius / distanceToCenter;
+      const diff = insideMode ? outerRadius : outerRadius - controllerRadius;
+      return {
+        location: {
           left: diffX * ratio + diff,
           top: diffY * ratio + diff,
-        });
-      }
-      setAngle(getAngle(diffX, diffY));
+        },
+        angle,
+        distance,
+      };
     },
     [autoReset, lockX, lockY, outerRadius, baseRadius, controllerRadius, insideMode],
+  );
+
+  const updateControllerLocation = React.useCallback(
+    (clientX: number, clientY: number) => {
+      const next = calcLocation(clientX, clientY);
+      setControllerLocation(next.location);
+      setAngle(next.angle);
+      setDistance(next.distance);
+    },
+    [calcLocation],
   );
 
   const reset = React.useCallback(() => {
@@ -136,17 +154,20 @@ const JoystickWithRef = forwardRef<IJoystickRef, IJoystickProps>((props, ref) =>
       updateControllerLocation(e.clientX, e.clientY);
     };
 
-    const handleMouseUp = (e: MouseEvent | Touch) => {
+    const handleMouseUp = (_e: MouseEvent | Touch) => {
       if (!isControlling.current) return;
       isControlling.current = false;
       onActiveChange?.(false);
       if (autoReset) {
         reset();
       } else {
-        lastDiff.current = {
-          x: e.clientX - touchStartPoint.current.left + lastDiff.current.x,
-          y: e.clientY - touchStartPoint.current.top + lastDiff.current.y,
-        };
+        setControllerLocation((loc) => {
+          lastDiff.current = {
+            x: loc.left - initialControllerLocation.left,
+            y: loc.top - initialControllerLocation.top,
+          };
+          return loc;
+        });
       }
     };
 

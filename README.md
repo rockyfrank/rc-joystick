@@ -64,5 +64,5 @@ export default () => {
 
 | Handler  | Description | Type |
 |----------|-------------|------|
-| reset | Reset joystick to origin | `() => void` |
+| reset | Reset joystick controller to origin | `() => void` |
 
