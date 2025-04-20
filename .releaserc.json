@@ -19,6 +19,5 @@
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }
     ]
-  ],
-  "initialVersion": "1.0.5"
+  ]
 }
