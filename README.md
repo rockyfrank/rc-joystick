@@ -3,6 +3,9 @@
 <p>
   <img src="https://img.shields.io/npm/v/rc-joystick">
   <img src="https://img.shields.io/bundlephobia/min/rc-joystick">
+  <img src="https://codecov.io/gh/rockyfrank/react-joystick/branch/master/graph/badge.svg">
+  <img src="https://img.shields.io/npm/dm/rc-joystick">
+  <img src="https://img.shields.io/npm/l/rc-joystick">
 </p>
 Joystick component built with React.
 Click <a href="https://rockyfrank.github.io/rc-joystick/?path=/docs/example--docs">here</a> to see the storybook.
