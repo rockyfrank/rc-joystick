@@ -27,7 +27,7 @@ const AutoRest: React.FC<IAutoRest> = ({ autoReset }) => {
 };
 
 const meta: Meta<typeof AutoRest> = {
-  title: 'Example',
+  title: 'Handlers',
   component: AutoRest,
   parameters: {
     // Optional parameter to center the component in the Canvas. More info: https://storybook.js.org/docs/react/configure/story-layout
@@ -41,6 +41,6 @@ type Story = StoryObj<typeof AutoRest>;
 
 export const AutoReset: Story = {
   args: {
-    autoReset: true,
+    autoReset: false,
   },
 };

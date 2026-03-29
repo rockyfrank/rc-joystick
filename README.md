@@ -69,3 +69,54 @@ export default () => {
 |----------|-------------|------|
 | reset | Reset joystick controller to origin | `() => void` |
 
+
+## 👻 GhostArea
+
+`GhostArea` is a transparent touch zone: when the user touches anywhere inside it, a joystick appears at the touch point and follows the finger until released.
+
+### Basic usage
+
+```tsx
+import Joystick, { GhostArea } from 'rc-joystick';
+
+export default () => (
+  <GhostArea width={400} height={400}>
+    <Joystick />
+  </GhostArea>
+);
+```
+
+### Multi-joystick (maxJoystickCount)
+
+Set `maxJoystickCount` to allow multiple simultaneous joysticks — one per finger touch, up to the limit. Pass a render function as `children` to give each joystick instance its own callbacks.
+
+```tsx
+import Joystick, { GhostArea } from 'rc-joystick';
+
+export default () => {
+  const handleChange = (index: number, val) => {
+    console.log(`Joystick ${index}:`, val);
+  };
+
+  return (
+    <GhostArea width={400} height={400} maxJoystickCount={2}>
+      {(index) => (
+        <Joystick onChange={(val) => handleChange(index, val)} />
+      )}
+    </GhostArea>
+  );
+};
+```
+
+> `children` also accepts a plain `ReactNode` (backward-compatible). In that case all slot instances share the same props/callbacks.
+
+### GhostArea props interface
+
+| Property | Description | Type | Default |
+|----------|-------------|------|---------|
+| width | Width of the ghost area | `React.CSSProperties['width']` | - |
+| height | Height of the ghost area | `React.CSSProperties['height']` | - |
+| className | Extra className for the ghost area container | `string` | - |
+| maxJoystickCount | Maximum number of simultaneously active joystick instances. Each finger touch (up to this limit) spawns its own joystick at the touch location. | `number` | `1` |
+| children | Joystick element(s) to render per slot. Pass a render function `(index: number) => ReactNode` to give each instance its own props/callbacks. | `ReactNode \| ((index: number) => ReactNode)` | - |
+

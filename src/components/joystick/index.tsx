@@ -3,7 +3,12 @@ import './index.less';
 import classnames from 'classnames';
 import React, { forwardRef } from 'react';
 
-import { GhostAreaInstanceContext, GhostContext } from '../../context';
+import {
+  GhostAreaInstanceContext,
+  GhostAreaManagementContext,
+  GhostContext,
+  SlotIndexContext,
+} from '../../context';
 import { useThrottle } from '../../hooks/useThrottle';
 import { DirectionCount, IJoystickProps, IJoystickRef, ILocation } from '../../typings';
 import { angleToDirection, getAngle, getStyleByRadius } from '../../utils';
@@ -45,6 +50,7 @@ const JoystickWithRef = forwardRef<IJoystickRef, IJoystickProps>((props, ref) =>
     y: 0,
   });
   const isControlling = React.useRef(false);
+  const activeTouchId = React.useRef<number | null>(null);
   const [controllerTransition, setControllerTransition] = React.useState(0);
 
   const outerRadius = React.useMemo(() => {
@@ -63,6 +69,8 @@ const JoystickWithRef = forwardRef<IJoystickRef, IJoystickProps>((props, ref) =>
     React.useState<ILocation>(initialControllerLocation);
   const { ghost, isActive } = React.useContext(GhostContext);
   const { getGhostArea } = React.useContext(GhostAreaInstanceContext);
+  const slotIndex = React.useContext(SlotIndexContext);
+  const ghostAreaManagement = React.useContext(GhostAreaManagementContext);
   const baseCls = classnames('react-joystick', className, {
     ghost,
     'ghost-active': isActive,
@@ -173,6 +181,10 @@ const JoystickWithRef = forwardRef<IJoystickRef, IJoystickProps>((props, ref) =>
 
     const onMouseDown = (e: MouseEvent | Touch) => {
       if (isMobile()) return;
+      // In a multi-slot GhostArea, only slot 0 responds to mouse clicks on the ghost area
+      // (mouse is a single pointer, so only one joystick can be active at a time).
+      const isClickGhostArea = (e.target as HTMLElement) === getGhostArea();
+      if (isClickGhostArea && slotIndex !== null && slotIndex !== 0) return;
       handleMouseDown(e);
     };
 
@@ -188,23 +200,50 @@ const JoystickWithRef = forwardRef<IJoystickRef, IJoystickProps>((props, ref) =>
 
     const onTouchStart = (e: TouchEvent) => {
       if (!isMobile()) return;
-      handleMouseDown(e.touches[0]);
+      if (activeTouchId.current !== null) return;
+      const touch = e.changedTouches[0];
+      const target = touch.target as HTMLElement;
+      const isTargetGhostArea = target === getGhostArea();
+      const isTargetController = target?.parentNode === controllerWrapper.current;
+
+      // When inside a GhostArea slot, only activate for the touch explicitly assigned
+      // to this slot by GhostArea (assignment is written synchronously before bubbling).
+      if (isTargetGhostArea && slotIndex !== null && ghostAreaManagement) {
+        const assignedSlot = ghostAreaManagement.touchAssignments.current.get(touch.identifier);
+        if (assignedSlot !== slotIndex) return;
+      }
+
+      if (isTargetGhostArea || isTargetController) {
+        e.preventDefault();
+        activeTouchId.current = touch.identifier;
+        handleMouseDown(touch);
+      }
     };
 
-    const onTouchMove = ({ touches }: TouchEvent) => {
-      if (!isMobile()) return;
-      handleMouseMove(touches[0]);
+    const onTouchMove = (e: TouchEvent) => {
+      if (!isMobile() || activeTouchId.current === null) return;
+      const touch = Array.from(e.touches).find((t) => t.identifier === activeTouchId.current);
+      if (touch) {
+        e.preventDefault();
+        handleMouseMove(touch);
+      }
     };
 
     const onTouchEnd = (e: TouchEvent) => {
-      if (!isMobile()) return;
-      handleMouseUp(e.touches[0]);
+      if (!isMobile() || activeTouchId.current === null) return;
+      const touch = Array.from(e.changedTouches).find(
+        (t) => t.identifier === activeTouchId.current,
+      );
+      if (touch) {
+        activeTouchId.current = null;
+        handleMouseUp(touch);
+      }
     };
 
     if (disabled) return;
 
-    document.addEventListener('touchstart', onTouchStart);
-    document.addEventListener('touchmove', onTouchMove);
+    document.addEventListener('touchstart', onTouchStart, { passive: false });
+    document.addEventListener('touchmove', onTouchMove, { passive: false });
     document.addEventListener('touchend', onTouchEnd);
     document.addEventListener('mousedown', onMouseDown);
     document.addEventListener('mousemove', onMouseMove);
@@ -226,6 +265,8 @@ const JoystickWithRef = forwardRef<IJoystickRef, IJoystickProps>((props, ref) =>
     onActiveChange,
     autoReset,
     reset,
+    slotIndex,
+    ghostAreaManagement,
   ]);
 
   const onChange = useThrottle(props.onChange, throttle);

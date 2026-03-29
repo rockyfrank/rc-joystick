@@ -4,7 +4,7 @@ import React from 'react';
 import { Joystick } from '../src/components/joystick';
 
 const meta: Meta<typeof Joystick> = {
-  title: 'Example',
+  title: 'BasicUsage',
   component: Joystick,
   parameters: {
     // Optional parameter to center the component in the Canvas. More info: https://storybook.js.org/docs/react/configure/story-layout
