@@ -1,8 +1,11 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 
 import Joystick, { Direction, DirectionCount, GhostArea, IJoystickRef } from '../src';
+import { ArrowsWrapper } from '../src/components/arrowsWrapper';
+import { Controller } from '../src/components/controller';
+import { useThrottle } from '../src/hooks/useThrottle';
 
 describe('Joystick test cases ', () => {
   it('should render correctly', () => {
@@ -325,14 +328,12 @@ describe('Joystick test cases ', () => {
     const controller = document.querySelector('.react-joystick-controller')!;
     const user = userEvent.setup();
 
-    // 模拟快速移动摇杆
     await user.pointer([
       { coords: { x: 35, y: 35 }, target: controller },
       { keys: '[MouseLeft>]', target: controller },
       { coords: { x: 35, y: 0 }, target: controller },
     ]);
 
-    // 立即检查，应该只调用一次
     expect(onChange).toHaveBeenCalledTimes(1);
 
     await user.pointer([
@@ -340,12 +341,9 @@ describe('Joystick test cases ', () => {
       { keys: '[MouseLeft>]', target: controller },
       { coords: { x: 0, y: 0 }, target: controller },
     ]);
-    // 由于节流，回调不应该立即被调用
     expect(onChange).toHaveBeenCalledTimes(1);
 
-    // 等待节流时间过去
     setTimeout(() => {
-      // 节流时间后，回调应该被调用
       expect(onChange).toHaveBeenCalledTimes(2);
     }, 150);
   });
@@ -484,6 +482,162 @@ describe('Joystick test cases ', () => {
     ]);
     expect(document.querySelector<HTMLDivElement>('.react-joystick')).not.toHaveClass(
       'ghost-active',
+    );
+  });
+});
+
+describe('ArrowsWrapper edge cases', () => {
+  it('should handle undefined arrow in render map gracefully', () => {
+    const renderArrows = {
+      [Direction.Top]: undefined as any,
+    };
+
+    const { container } = render(
+      <ArrowsWrapper renderArrows={renderArrows} direction={Direction.Center} />,
+    );
+
+    expect(container.querySelector('.arrows-wrapper')).toBeTruthy();
+  });
+});
+
+describe('Controller edge cases', () => {
+  it('should render with explicit className', () => {
+    const { container } = render(<Controller radius={35} className="custom" />);
+    expect(container.querySelector('.custom')).toBeTruthy();
+  });
+
+  it('should render without className prop', () => {
+    const { container } = render(<Controller radius={35} />);
+    const controller = container.firstElementChild;
+    expect(controller).toBeTruthy();
+    expect(controller?.className).toBe('');
+  });
+});
+
+describe('useThrottle edge cases', () => {
+  function TestComp({ func, throttle }: { func?: () => void; throttle?: number }) {
+    const throttled = useThrottle(func, throttle);
+    React.useEffect(() => {
+      throttled?.();
+    }, [throttled]);
+    return null;
+  }
+
+  it('should return undefined when func is undefined with throttle', () => {
+    render(<TestComp func={undefined} throttle={100} />);
+  });
+
+  it('should return undefined when func is undefined without throttle', () => {
+    render(<TestComp func={undefined} throttle={0} />);
+  });
+
+  it('should return undefined when func is undefined and no throttle arg', () => {
+    render(<TestComp />);
+  });
+
+  it('should return original func when throttle is 0', () => {
+    const fn = jest.fn();
+    render(<TestComp func={fn} throttle={0} />);
+    expect(fn).toHaveBeenCalled();
+  });
+
+  it('should return throttled func when both func and throttle are provided', () => {
+    const fn = jest.fn();
+    render(<TestComp func={fn} throttle={100} />);
+    expect(fn).toHaveBeenCalled();
+  });
+});
+
+describe('Joystick mouse handler branches', () => {
+  it('should ignore mousemove when not controlling', () => {
+    const onChange = jest.fn();
+    render(<Joystick onChange={onChange} />);
+
+    onChange.mockClear();
+    fireEvent.mouseMove(document, { clientX: 200, clientY: 200 });
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('should ignore mouseup when not controlling', () => {
+    const onActiveChange = jest.fn();
+    render(<Joystick onActiveChange={onActiveChange} />);
+
+    fireEvent.mouseUp(document);
+    expect(onActiveChange).not.toHaveBeenCalled();
+  });
+
+  it('should ignore mousedown on unrelated element', () => {
+    const onActiveChange = jest.fn();
+    render(
+      <div>
+        <div data-testid="outside">outside</div>
+        <Joystick onActiveChange={onActiveChange} />
+      </div>,
+    );
+
+    fireEvent.mouseDown(screen.getByTestId('outside'));
+    expect(onActiveChange).not.toHaveBeenCalled();
+  });
+
+  it('should ignore touch events in desktop mode', () => {
+    const onActiveChange = jest.fn();
+    const { container } = render(<Joystick onActiveChange={onActiveChange} />);
+    const ctrl = container.querySelector('.react-joystick-controller')!;
+
+    fireEvent.touchStart(ctrl, {
+      touches: [{ clientX: 100, clientY: 100, identifier: 0 }],
+      changedTouches: [{ clientX: 100, clientY: 100, identifier: 0 }],
+    });
+
+    expect(onActiveChange).not.toHaveBeenCalled();
+  });
+});
+
+describe('Joystick ghost area interaction via mouse', () => {
+  it('should activate via ghost area click', async () => {
+    const onActiveChange = jest.fn();
+    render(
+      <GhostArea width={400} height={400}>
+        <Joystick onActiveChange={onActiveChange} />
+      </GhostArea>,
+    );
+
+    const ghostArea = document.querySelector<HTMLDivElement>('.react-joystick-ghost-area')!;
+    const user = userEvent.setup();
+
+    await user.pointer([
+      { coords: { x: 200, y: 200 }, target: ghostArea },
+      { keys: '[MouseLeft>]', target: ghostArea },
+    ]);
+
+    expect(onActiveChange).toHaveBeenCalledWith(true);
+
+    await user.pointer([{ keys: '[/MouseLeft]' }]);
+    expect(onActiveChange).toHaveBeenCalledWith(false);
+  });
+
+  it('should move controller when dragging from ghost area', async () => {
+    const onChange = jest.fn();
+    render(
+      <GhostArea width={400} height={400}>
+        <Joystick onChange={onChange} />
+      </GhostArea>,
+    );
+
+    const ghostArea = document.querySelector<HTMLDivElement>('.react-joystick-ghost-area')!;
+    const user = userEvent.setup();
+
+    await user.pointer([
+      { coords: { x: 200, y: 200 }, target: ghostArea },
+      { keys: '[MouseLeft>]', target: ghostArea },
+      { coords: { x: 250, y: 200 }, target: ghostArea },
+    ]);
+
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        distance: expect.any(Number),
+        angle: expect.any(Number),
+      }),
     );
   });
 });

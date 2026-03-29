@@ -45,6 +45,7 @@ const JoystickWithRef = forwardRef<IJoystickRef, IJoystickProps>((props, ref) =>
     y: 0,
   });
   const isControlling = React.useRef(false);
+  const activeTouchId = React.useRef<number | null>(null);
   const [controllerTransition, setControllerTransition] = React.useState(0);
 
   const outerRadius = React.useMemo(() => {
@@ -188,23 +189,42 @@ const JoystickWithRef = forwardRef<IJoystickRef, IJoystickProps>((props, ref) =>
 
     const onTouchStart = (e: TouchEvent) => {
       if (!isMobile()) return;
-      handleMouseDown(e.touches[0]);
+      if (activeTouchId.current !== null) return;
+      const touch = e.changedTouches[0];
+      const target = touch.target as HTMLElement;
+      const isTargetGhostArea = target === getGhostArea();
+      const isTargetController = target?.parentNode === controllerWrapper.current;
+      if (isTargetGhostArea || isTargetController) {
+        e.preventDefault();
+        activeTouchId.current = touch.identifier;
+        handleMouseDown(touch);
+      }
     };
 
-    const onTouchMove = ({ touches }: TouchEvent) => {
-      if (!isMobile()) return;
-      handleMouseMove(touches[0]);
+    const onTouchMove = (e: TouchEvent) => {
+      if (!isMobile() || activeTouchId.current === null) return;
+      const touch = Array.from(e.touches).find((t) => t.identifier === activeTouchId.current);
+      if (touch) {
+        e.preventDefault();
+        handleMouseMove(touch);
+      }
     };
 
     const onTouchEnd = (e: TouchEvent) => {
-      if (!isMobile()) return;
-      handleMouseUp(e.touches[0]);
+      if (!isMobile() || activeTouchId.current === null) return;
+      const touch = Array.from(e.changedTouches).find(
+        (t) => t.identifier === activeTouchId.current,
+      );
+      if (touch) {
+        activeTouchId.current = null;
+        handleMouseUp(touch);
+      }
     };
 
     if (disabled) return;
 
-    document.addEventListener('touchstart', onTouchStart);
-    document.addEventListener('touchmove', onTouchMove);
+    document.addEventListener('touchstart', onTouchStart, { passive: false });
+    document.addEventListener('touchmove', onTouchMove, { passive: false });
     document.addEventListener('touchend', onTouchEnd);
     document.addEventListener('mousedown', onMouseDown);
     document.addEventListener('mousemove', onMouseMove);

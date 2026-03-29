@@ -38,7 +38,7 @@ const AddListenersDemo: React.FC<IAddListenersDemo> = ({ throttle = 0, direction
 };
 
 const meta: Meta<typeof AddListenersDemo> = {
-  title: 'Example',
+  title: 'Listeners',
   component: AddListenersDemo,
   parameters: {
     // Optional parameter to center the component in the Canvas. More info: https://storybook.js.org/docs/react/configure/story-layout
