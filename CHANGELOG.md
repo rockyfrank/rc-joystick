@@ -1,3 +1,10 @@
+## [1.1.1-beta.1](https://github.com/rockyfrank/rc-joystick/compare/v1.1.0...v1.1.1-beta.1) (2026-03-29)
+
+
+### Bug Fixes
+
+* fix the exports error, to [#10](https://github.com/rockyfrank/rc-joystick/issues/10) ([9aa298a](https://github.com/rockyfrank/rc-joystick/commit/9aa298a833077b48182501328e41d5bd1a9df047))
+
 # [1.1.0](https://github.com/rockyfrank/rc-joystick/compare/v1.0.5...v1.1.0) (2025-04-20)
 
 
