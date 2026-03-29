@@ -421,6 +421,30 @@ describe('Multi-instance touch support', () => {
   });
 });
 
+function mockGhostAreaBounds(el: HTMLElement) {
+  el.getBoundingClientRect = jest.fn(() => ({
+    left: 0,
+    top: 0,
+    width: 400,
+    height: 400,
+    right: 400,
+    bottom: 400,
+    x: 0,
+    y: 0,
+    toJSON: () => {},
+  }));
+}
+
+function touchstartOnElement(el: HTMLElement, touches: Touch[]) {
+  const event = new TouchEvent('touchstart', {
+    bubbles: true,
+    cancelable: true,
+    changedTouches: touches,
+    touches,
+  });
+  el.dispatchEvent(event);
+}
+
 describe('GhostArea touch support (mobile)', () => {
   it('should handle touch start on ghost area and activate joystick', () => {
     const onActiveChange = jest.fn();
@@ -481,5 +505,298 @@ describe('GhostArea touch support (mobile)', () => {
     expect(container.querySelector<HTMLDivElement>('.react-joystick')).not.toHaveClass(
       'ghost-active',
     );
+  });
+});
+
+describe('GhostArea multi-joystick (maxJoystickCount)', () => {
+  it('should render maxJoystickCount slot wrappers', () => {
+    const { container } = render(
+      <GhostArea width={400} height={400} maxJoystickCount={3}>
+        <Joystick />
+      </GhostArea>,
+    );
+
+    const wrappers = container.querySelectorAll('.react-joystick-wrapper');
+    expect(wrappers).toHaveLength(3);
+
+    const joysticks = container.querySelectorAll('.react-joystick');
+    expect(joysticks).toHaveLength(3);
+  });
+
+  it('should activate each joystick slot at its touch location', () => {
+    const { container } = render(
+      <GhostArea width={400} height={400} maxJoystickCount={2}>
+        <Joystick />
+      </GhostArea>,
+    );
+
+    const ghostArea = container.querySelector<HTMLDivElement>('.react-joystick-ghost-area')!;
+    mockGhostAreaBounds(ghostArea);
+
+    const joysticks = container.querySelectorAll<HTMLDivElement>('.react-joystick');
+
+    // First finger
+    act(() => {
+      touchstartOnElement(ghostArea, [createTouch(ghostArea, 0, 100, 150)]);
+    });
+
+    expect(joysticks[0]).toHaveClass('ghost-active');
+    expect(joysticks[1]).not.toHaveClass('ghost-active');
+
+    // Second finger
+    act(() => {
+      touchstartOnElement(ghostArea, [createTouch(ghostArea, 1, 300, 250)]);
+    });
+
+    expect(joysticks[0]).toHaveClass('ghost-active');
+    expect(joysticks[1]).toHaveClass('ghost-active');
+
+    // Verify wrapper positions match touch coords
+    const wrappers = container.querySelectorAll<HTMLDivElement>('.react-joystick-wrapper');
+    expect((wrappers[0] as HTMLDivElement).style.left).toBe('100px');
+    expect((wrappers[0] as HTMLDivElement).style.top).toBe('150px');
+    expect((wrappers[1] as HTMLDivElement).style.left).toBe('300px');
+    expect((wrappers[1] as HTMLDivElement).style.top).toBe('250px');
+  });
+
+  it('should call onActiveChange only for the touched slot', () => {
+    const cb0 = jest.fn();
+    const cb1 = jest.fn();
+
+    const { container } = render(
+      <GhostArea width={400} height={400} maxJoystickCount={2}>
+        {(index) => <Joystick onActiveChange={index === 0 ? cb0 : cb1} />}
+      </GhostArea>,
+    );
+
+    const ghostArea = container.querySelector<HTMLDivElement>('.react-joystick-ghost-area')!;
+    mockGhostAreaBounds(ghostArea);
+
+    // Activate slot 0 via touch 0
+    const touch0 = createTouch(ghostArea, 0, 100, 100);
+    act(() => {
+      touchstartOnElement(ghostArea, [touch0]);
+    });
+    act(() => {
+      dispatchTouchStart([touch0]);
+    });
+
+    expect(cb0).toHaveBeenCalledWith(true);
+    expect(cb1).not.toHaveBeenCalled();
+
+    // Activate slot 1 via touch 1
+    const touch1 = createTouch(ghostArea, 1, 300, 300);
+    act(() => {
+      touchstartOnElement(ghostArea, [touch1]);
+    });
+    act(() => {
+      dispatchTouchStart([touch1], [touch0, touch1]);
+    });
+
+    expect(cb1).toHaveBeenCalledWith(true);
+  });
+
+  it('should not exceed maxJoystickCount active slots', () => {
+    const { container } = render(
+      <GhostArea width={400} height={400} maxJoystickCount={2}>
+        <Joystick />
+      </GhostArea>,
+    );
+
+    const ghostArea = container.querySelector<HTMLDivElement>('.react-joystick-ghost-area')!;
+    mockGhostAreaBounds(ghostArea);
+
+    act(() => {
+      touchstartOnElement(ghostArea, [createTouch(ghostArea, 0, 100, 100)]);
+    });
+    act(() => {
+      touchstartOnElement(ghostArea, [createTouch(ghostArea, 1, 200, 200)]);
+    });
+    // Third touch — should be ignored (maxJoystickCount = 2)
+    act(() => {
+      touchstartOnElement(ghostArea, [createTouch(ghostArea, 2, 300, 300)]);
+    });
+
+    const activeJoysticks = container.querySelectorAll('.react-joystick.ghost-active');
+    expect(activeJoysticks).toHaveLength(2);
+  });
+
+  it('should deactivate only the released slot', () => {
+    const { container } = render(
+      <GhostArea width={400} height={400} maxJoystickCount={2}>
+        <Joystick />
+      </GhostArea>,
+    );
+
+    const ghostArea = container.querySelector<HTMLDivElement>('.react-joystick-ghost-area')!;
+    mockGhostAreaBounds(ghostArea);
+
+    const touch0 = createTouch(ghostArea, 0, 100, 100);
+    const touch1 = createTouch(ghostArea, 1, 300, 300);
+
+    act(() => {
+      touchstartOnElement(ghostArea, [touch0]);
+    });
+    act(() => {
+      touchstartOnElement(ghostArea, [touch1]);
+    });
+
+    const joysticks = container.querySelectorAll<HTMLDivElement>('.react-joystick');
+    expect(joysticks[0]).toHaveClass('ghost-active');
+    expect(joysticks[1]).toHaveClass('ghost-active');
+
+    // Release touch 0
+    act(() => {
+      dispatchTouchEnd([touch0], [touch1]);
+    });
+
+    expect(joysticks[0]).not.toHaveClass('ghost-active');
+    expect(joysticks[1]).toHaveClass('ghost-active');
+  });
+
+  it('should deactivate joystick via onActiveChange when touch ends', () => {
+    const cb0 = jest.fn();
+    const cb1 = jest.fn();
+
+    const { container } = render(
+      <GhostArea width={400} height={400} maxJoystickCount={2}>
+        {(index) => <Joystick onActiveChange={index === 0 ? cb0 : cb1} />}
+      </GhostArea>,
+    );
+
+    const ghostArea = container.querySelector<HTMLDivElement>('.react-joystick-ghost-area')!;
+    mockGhostAreaBounds(ghostArea);
+
+    const touch0 = createTouch(ghostArea, 0, 100, 100);
+    const touch1 = createTouch(ghostArea, 1, 300, 300);
+
+    act(() => {
+      touchstartOnElement(ghostArea, [touch0]);
+    });
+    act(() => {
+      dispatchTouchStart([touch0]);
+    });
+    act(() => {
+      touchstartOnElement(ghostArea, [touch1]);
+    });
+    act(() => {
+      dispatchTouchStart([touch1], [touch0, touch1]);
+    });
+
+    cb0.mockClear();
+    cb1.mockClear();
+
+    // Release only touch 1
+    act(() => {
+      dispatchTouchEnd([touch1], [touch0]);
+    });
+
+    expect(cb1).toHaveBeenCalledWith(false);
+    expect(cb0).not.toHaveBeenCalled();
+  });
+
+  it('should reuse a freed slot for a subsequent touch', () => {
+    const cb0 = jest.fn();
+
+    const { container } = render(
+      <GhostArea width={400} height={400} maxJoystickCount={1}>
+        {(index) => <Joystick onActiveChange={index === 0 ? cb0 : undefined} />}
+      </GhostArea>,
+    );
+
+    const ghostArea = container.querySelector<HTMLDivElement>('.react-joystick-ghost-area')!;
+    mockGhostAreaBounds(ghostArea);
+
+    const touch0 = createTouch(ghostArea, 0, 100, 100);
+
+    act(() => {
+      touchstartOnElement(ghostArea, [touch0]);
+    });
+    act(() => {
+      dispatchTouchStart([touch0]);
+    });
+
+    expect(cb0).toHaveBeenCalledWith(true);
+
+    act(() => {
+      dispatchTouchEnd([touch0], []);
+    });
+
+    expect(cb0).toHaveBeenCalledWith(false);
+    cb0.mockClear();
+
+    // New touch should claim slot 0 again
+    const touch1 = createTouch(ghostArea, 1, 200, 200);
+    act(() => {
+      touchstartOnElement(ghostArea, [touch1]);
+    });
+    act(() => {
+      dispatchTouchStart([touch1]);
+    });
+
+    expect(cb0).toHaveBeenCalledWith(true);
+  });
+
+  it('should support function children passing slot index', () => {
+    const receivedIndices: number[] = [];
+
+    const { container } = render(
+      <GhostArea width={400} height={400} maxJoystickCount={2}>
+        {(index) => {
+          receivedIndices.push(index);
+          return <Joystick />;
+        }}
+      </GhostArea>,
+    );
+
+    // Both slots are rendered at mount; indices should be 0 and 1
+    expect(container.querySelectorAll('.react-joystick')).toHaveLength(2);
+    expect(receivedIndices).toEqual(expect.arrayContaining([0, 1]));
+  });
+
+  it('should move only the joystick matching the touch', () => {
+    const onChange0 = jest.fn();
+    const onChange1 = jest.fn();
+
+    const { container } = render(
+      <GhostArea width={400} height={400} maxJoystickCount={2}>
+        {(index) => <Joystick onChange={index === 0 ? onChange0 : onChange1} />}
+      </GhostArea>,
+    );
+
+    const ghostArea = container.querySelector<HTMLDivElement>('.react-joystick-ghost-area')!;
+    mockGhostAreaBounds(ghostArea);
+
+    const touch0 = createTouch(ghostArea, 0, 100, 100);
+    const touch1 = createTouch(ghostArea, 1, 300, 300);
+
+    act(() => {
+      touchstartOnElement(ghostArea, [touch0]);
+    });
+    act(() => {
+      dispatchTouchStart([touch0]);
+    });
+    act(() => {
+      touchstartOnElement(ghostArea, [touch1]);
+    });
+    act(() => {
+      dispatchTouchStart([touch1], [touch0, touch1]);
+    });
+
+    onChange0.mockClear();
+    onChange1.mockClear();
+
+    // Move only touch 1
+    const movedTouch1 = createTouch(ghostArea, 1, 350, 300);
+    act(() => {
+      dispatchTouchMove([touch0, movedTouch1]);
+    });
+
+    expect(onChange1).toHaveBeenCalled();
+    const lastCall = onChange1.mock.calls[onChange1.mock.calls.length - 1][0];
+    expect(lastCall.distance).toBeGreaterThan(0);
+
+    // onChange0 should not have been called by this move
+    expect(onChange0).not.toHaveBeenCalled();
   });
 });
