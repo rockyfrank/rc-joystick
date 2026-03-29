@@ -15,11 +15,13 @@ const baseConfig: Options = {
 export default defineConfig([
   {
     ...baseConfig,
+    format: 'esm',
     target: 'esnext',
     outDir: 'dist/es',
   },
   {
     ...baseConfig,
+    format: 'cjs',
     target: 'es5',
     outDir: 'dist/lib',
   },
