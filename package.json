@@ -9,7 +9,7 @@
     "dist"
   ],
   "engines": {
-    "node": ">=24.10.0"
+    "node": ">=22.14.0"
   },
   "repository": {
     "type": "git",
